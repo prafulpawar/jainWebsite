@@ -1,0 +1,191 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Background Colors */
+    --background: 40 33% 96%;
+    --foreground: 0 10% 15%;
+
+    /* Card & Popover - Warm White */
+    --card: 0 0% 100%;
+    --card-foreground: 0 10% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 10% 15%;
+
+    /* Primary - Saffron Orange */
+    --primary: 28 81% 52%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Deep Maroon */
+    --secondary: 0 100% 25%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Muted - Soft Cream */
+    --muted: 40 20% 92%;
+    --muted-foreground: 0 10% 40%;
+
+    /* Accent - Gold */
+    --accent: 43 68% 52%;
+    --accent-foreground: 0 10% 15%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & Inputs */
+    --border: 40 20% 85%;
+    --input: 40 20% 90%;
+    --ring: 28 81% 52%;
+
+    --radius: 0.5rem;
+
+    /* Custom Colors */
+    --cream: 40 33% 96%;
+    --saffron: 28 81% 52%;
+    --saffron-light: 28 81% 62%;
+    --saffron-dark: 28 81% 42%;
+    --maroon: 0 100% 25%;
+    --maroon-light: 0 70% 35%;
+    --gold: 43 68% 52%;
+    --gold-light: 43 68% 65%;
+    --warm-white: 40 50% 98%;
+
+    /* Sidebar */
+    --sidebar-background: 40 33% 96%;
+    --sidebar-foreground: 0 10% 15%;
+    --sidebar-primary: 28 81% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 43 68% 52%;
+    --sidebar-accent-foreground: 0 10% 15%;
+    --sidebar-border: 40 20% 85%;
+    --sidebar-ring: 28 81% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Lato', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer components {
+  /* Mandala Pattern Background */
+  .mandala-pattern {
+    position: relative;
+  }
+  
+  .mandala-pattern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%23D4AF37' stroke-width='0.5' opacity='0.08'%3E%3Ccircle cx='100' cy='100' r='95'/%3E%3Ccircle cx='100' cy='100' r='80'/%3E%3Ccircle cx='100' cy='100' r='65'/%3E%3Ccircle cx='100' cy='100' r='50'/%3E%3Ccircle cx='100' cy='100' r='35'/%3E%3Ccircle cx='100' cy='100' r='20'/%3E%3Cpath d='M100 5 L100 195 M5 100 L195 100 M29.29 29.29 L170.71 170.71 M170.71 29.29 L29.29 170.71'/%3E%3Cpath d='M100 5 Q150 50 195 100 Q150 150 100 195 Q50 150 5 100 Q50 50 100 5'/%3E%3Cpath d='M100 20 Q140 60 180 100 Q140 140 100 180 Q60 140 20 100 Q60 60 100 20'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 200px 200px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Jali Pattern Border */
+  .jali-border {
+    border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%23D4AF37' d='M10 0L20 10L10 20L0 10z' opacity='0.3'/%3E%3C/svg%3E") 10 repeat;
+  }
+
+  /* Gold Gradient */
+  .gold-gradient {
+    background: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(var(--gold-light)) 50%, hsl(var(--gold)) 100%);
+  }
+
+  /* Saffron Gradient */
+  .saffron-gradient {
+    background: linear-gradient(135deg, hsl(var(--saffron)) 0%, hsl(var(--saffron-light)) 100%);
+  }
+
+  /* Section divider */
+  .section-divider {
+    height: 3px;
+    background: linear-gradient(90deg, transparent 0%, hsl(var(--gold)) 50%, transparent 100%);
+  }
+
+  /* Decorative corner */
+  .decorative-corner::before,
+  .decorative-corner::after {
+    content: '❧';
+    color: hsl(var(--gold));
+    font-size: 1.5rem;
+  }
+}
+
+@layer utilities {
+  /* Text shadow for hero */
+  .text-shadow {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Smooth scroll */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Animation delays */
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+  .animation-delay-600 {
+    animation-delay: 600ms;
+  }
+}
+/* Add this to your CSS file */
+
+.category-scrollbar {
+  /* Smooth scrolling behavior */
+  scroll-behavior: smooth;
+}
+
+/* The entire scrollbar track */
+.category-scrollbar::-webkit-scrollbar {
+  height: 6px; /* Slim height for horizontal scroll */
+}
+
+/* The background of the scrollbar */
+.category-scrollbar::-webkit-scrollbar-track {
+  background: transparent; /* Keep it clean */
+  margin: 0 10px; /* spacing from edges */
+}
+
+/* The moving part of the scrollbar */
+.category-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(218, 165, 32, 0.3); /* Gold color with low opacity */
+  border-radius: 20px; /* Pill shape */
+  transition: background-color 0.3s ease;
+}
+
+/* Hover state - make it distinct */
+.category-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(218, 165, 32, 0.9); /* Solid Gold on hover */
+  cursor: pointer;
+}
+
+/* Firefox support */
+.category-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(218, 165, 32, 0.5) transparent;
+}
