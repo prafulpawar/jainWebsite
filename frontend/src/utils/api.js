@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://jainwebsitebj.onrender.com', // Your Backend URL
+  baseURL: 'https://jainwebsitebj.onrender.com/api', // Your Backend URL
 });
 
 // Add a request interceptor to include token
