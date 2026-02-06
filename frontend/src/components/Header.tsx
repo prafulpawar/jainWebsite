@@ -1,43 +1,51 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Menu, X, Facebook, Instagram, Youtube, Sun, Moon, Calendar } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { Menu, X, Facebook, Instagram, Youtube, Sun, Moon, Calendar, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils"; 
 
-// 1. Removed submenu arrays from navItems
 const navItems = [
   { name: "Home", href: "/" },
-  { name: "About", href: "/about" },
-  { name: "Events", href: "/events" },
-  // { name: "Services", href: "/services" },
+  { 
+    name: "About", 
+    href: "/about",
+    submenu: [
+      { name: "About Jainism", href: "/about#jainism" },
+      { name: "About JSOT", href: "/about#jsot" },
+      { name: "Board of Directors", href: "/about#board" },
+      { name: "Management Committee", href: "/about#management" },
+    ]
+  },
+  { 
+    name: "Events", 
+    href: "/events",
+    // Added Submenu for Events here
+    submenu: [
+      { name: "Upcoming Events", href: "/events#upcoming" },
+      { name: "Calendar", href: "/events#calendar" },
+      { name: "Affiliated Groups", href: "/events#groups" },
+      { name: "Past Events Gallery", href: "/events#past" },
+    ]
+  },
   { name: "Resources", href: "/resources" },
-  { name: "Contact", href: "/contact" },
+  // { name: "Contact", href: "/contact" },
+  { name: "Visitor", href: '/Visitor' }
 ];
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  // 2. Removed activeDropdown state as it's no longer needed
+  // State to track which mobile submenu is open
+  const [mobileSubmenuOpen, setMobileSubmenuOpen] = useState<string | null>(null);
+  
+  const location = useLocation();
 
   const isExternalLink = (href: string) => href.startsWith("#");
 
-  // 3. Simplified NavLink (removed ChevronDown and submenu checks)
-  const NavLink = ({ item, className, onClick }: { item: typeof navItems[0]; className?: string; onClick?: () => void }) => {
-    if (isExternalLink(item.href)) {
-      return (
-        <a href={item.href} className={className} onClick={onClick}>
-          {item.name}
-        </a>
-      );
-    }
-    return (
-      <Link to={item.href} className={className} onClick={onClick}>
-        {item.name}
-      </Link>
-    );
+  const toggleMobileSubmenu = (name: string) => {
+    setMobileSubmenuOpen(mobileSubmenuOpen === name ? null : name);
   };
 
-  // 4. Removed SubNavLink component entirely
-
-  // Mock Panchang data logic (Unchanged)
+  // Mock Panchang data logic
   const getPanchangData = () => {
     const today = new Date();
     const moonPhases = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"];
@@ -66,7 +74,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm shadow-md border-b-2 border-gold/30">
       
-      {/* Top Bar with Panchang Data (Unchanged) */}
+      {/* Top Bar with Panchang Data */}
       <div className="bg-secondary text-secondary-foreground py-2 px-4">
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center text-sm gap-2 md:gap-0">
           
@@ -92,8 +100,6 @@ export function Header() {
               <span className="opacity-80 hidden sm:inline">Chovihar:</span>
               <span className="font-semibold text-gold-light">{panchang.chovihar}</span>
             </div>
-            
-            <span className="hidden sm:inline opacity-30">|</span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -127,21 +133,57 @@ export function Header() {
             </div>
           </Link>
 
-          {/* 5. Simplified Desktop Navigation (Direct links only) */}
+          {/* DESKTOP NAVIGATION */}
           <div className="hidden lg:flex items-center gap-1">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.name}
-                item={item}
-                className="flex items-center gap-1 px-4 py-2 text-foreground hover:text-primary font-medium transition-colors"
-              />
-            ))}
+            {navItems.map((item) => {
+              // Has Submenu?
+              if (item.submenu) {
+                return (
+                  <div key={item.name} className="relative group px-3 py-2">
+                    <button 
+                      className="flex items-center gap-1 text-foreground hover:text-primary font-medium transition-colors focus:outline-none"
+                    >
+                      {item.name}
+                      <ChevronDown className="w-4 h-4 transition-transform group-hover:rotate-180" />
+                    </button>
+                    
+                    {/* Dropdown Menu */}
+                    <div className="absolute left-0 top-full pt-2 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 z-50">
+                      <div className="bg-card border border-gold/20 rounded-lg shadow-xl overflow-hidden">
+                        {item.submenu.map((subItem) => (
+                          <Link
+                            key={subItem.name}
+                            to={subItem.href}
+                            className="block px-4 py-3 text-sm text-foreground/80 hover:bg-gold/10 hover:text-primary transition-colors border-b border-border last:border-0"
+                          >
+                            {subItem.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
+              // Normal Link
+              if (isExternalLink(item.href)) {
+                return (
+                  <a key={item.name} href={item.href} className="px-4 py-2 text-foreground hover:text-primary font-medium transition-colors">
+                    {item.name}
+                  </a>
+                );
+              }
+              return (
+                <Link key={item.name} to={item.href} className="px-4 py-2 text-foreground hover:text-primary font-medium transition-colors">
+                  {item.name}
+                </Link>
+              );
+            })}
           </div>
 
-          {/* Donate Button & Mobile Menu */}
-
+          {/* Donate Button & Hamburger */}
           <div className="flex items-center gap-3">
-            <Button variant="donate" size="lg" className="hidden sm:flex">
+            <Button variant="default" size="lg" className="hidden sm:flex bg-gold hover:bg-gold/80 text-black font-semibold">
               DONATE NOW
             </Button>
             <button
@@ -152,21 +194,54 @@ export function Header() {
               {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
-
         </div>
 
-        {/* 6. Simplified Mobile Navigation (Direct links only) */}
+        {/* MOBILE NAVIGATION */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden mt-4 pb-4 border-t border-border pt-4 ">
+          <div className="lg:hidden mt-4 pb-4 border-t border-border pt-4 animate-in slide-in-from-top-2">
             {navItems.map((item) => (
-              <NavLink
-                key={item.name}
-                item={item}
-                className="block py-2 text-foreground hover:text-primary font-medium"
-                onClick={() => setIsMobileMenuOpen(false)}
-              />
+              <div key={item.name}>
+                {item.submenu ? (
+                  // Mobile Submenu Logic
+                  <div>
+                    <button
+                      onClick={() => toggleMobileSubmenu(item.name)}
+                      className="flex items-center justify-between w-full py-2 text-foreground hover:text-primary font-medium"
+                    >
+                      {item.name}
+                      <ChevronDown 
+                        className={`w-4 h-4 transition-transform ${mobileSubmenuOpen === item.name ? "rotate-180" : ""}`} 
+                      />
+                    </button>
+                    
+                    {mobileSubmenuOpen === item.name && (
+                      <div className="pl-4 space-y-1 border-l-2 border-gold/20 ml-2 mb-2">
+                        {item.submenu.map((subItem) => (
+                          <Link
+                            key={subItem.name}
+                            to={subItem.href}
+                            className="block py-2 text-sm text-muted-foreground hover:text-primary"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            {subItem.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  // Mobile Standard Link
+                  <Link
+                    to={item.href}
+                    className="block py-2 text-foreground hover:text-primary font-medium"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {item.name}
+                  </Link>
+                )}
+              </div>
             ))}
-            <Button variant="donate" className="w-full mt-4">
+            <Button className="w-full mt-4 bg-gold hover:bg-gold/80 text-black">
               DONATE NOW
             </Button>
           </div>

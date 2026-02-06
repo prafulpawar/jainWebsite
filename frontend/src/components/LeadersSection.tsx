@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react"; // 1. Added Hook imports
+import { useLocation } from "react-router-dom"; // 2. Added useLocation
 import { Mail, Phone, Briefcase, User } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +10,6 @@ import mahendraImg from "@/assets/Mahendra-Jain-e1646620015678.jpg";
 import manharImg from "@/assets/Manhar-Sheth-rotated-e1646620155108.jpg";
 import devangImg from "@/assets/3DEVANG-SHAH-PHOTO-268x300-1.jpg";
 import pareshImg from "@/assets/Paresh-Doshi-e1661222984255.png";
-// Note: Surinder Jain has no image, handled in logic below.
 
 // --- MANAGEMENT COMMITTEE IMAGES ---
 import nikhilImg from "@/assets/Management/NikhilNagda.jpg";
@@ -25,7 +26,6 @@ import viraagImg from "@/assets/Management/viraagpatni-e1752291960381.jpeg";
 import viralImg from "@/assets/Management/viralshah-e1752991409945.jpg";
 
 // --- DATA: BOARD OF DIRECTORS ---
-// Updated based on provided text
 const boardMembers = [
   {
     name: "Mahendra Jain",
@@ -37,7 +37,7 @@ const boardMembers = [
   {
     name: "Surinder Jain",
     role: "BOD Secretary",
-    image: null, // No photo provided
+    image: null, 
     email: "surinjain@yahoo.com",
     phone: "+1 (905) 462-9246"
   },
@@ -180,34 +180,6 @@ const managementCommittee = [
   },
 ];
 
-// --- DATA: SERVICES (Community Directory) ---
-const services = [
-  {
-    name: "Jain Accounting Services",
-    owner: "Hemant Sheth, CPA",
-    category: "Financial Services",
-    phone: "(416) 555-0101",
-  },
-  {
-    name: "Ahimsa Legal Consulting",
-    owner: "Meera Jain, LLB",
-    category: "Legal Services",
-    phone: "(416) 555-0102",
-  },
-  {
-    name: "Satvik Catering",
-    owner: "Kiran Doshi",
-    category: "Food & Catering",
-    phone: "(416) 555-0103",
-  },
-  {
-    name: "Jain Real Estate",
-    owner: "Sanjay Parekh",
-    category: "Real Estate",
-    phone: "(416) 555-0104",
-  },
-];
-
 // Helper Component for Member Card
 const MemberCard = ({ member, showPhone = false }: { member: any, showPhone?: boolean }) => (
   <Card className="border-gold/20 overflow-hidden group hover:shadow-xl transition-all duration-300">
@@ -222,7 +194,6 @@ const MemberCard = ({ member, showPhone = false }: { member: any, showPhone?: bo
           />
         ) : (
           <div className="w-full h-full rounded-full border-4 border-card relative z-10 group-hover:scale-105 transition-transform duration-300 bg-secondary/10 flex items-center justify-center text-secondary">
-             {/* Placeholder for missing image */}
              <span className="text-3xl font-serif font-bold opacity-50">{member.name.charAt(0)}</span>
           </div>
         )}
@@ -255,12 +226,25 @@ const MemberCard = ({ member, showPhone = false }: { member: any, showPhone?: bo
 );
 
 export function LeadersSection() {
+  const location = useLocation();
+  // 3. State to control the active tab
+  const [activeTab, setActiveTab] = useState("management");
+
+  // 4. Effect to change tab based on URL hash
+  useEffect(() => {
+    if (location.hash === "#board") {
+      setActiveTab("board");
+    } else if (location.hash === "#management") {
+      setActiveTab("management");
+    }
+  }, [location.hash]);
+
   return (
     <section id="community" className="py-16 md:py-24 mandala-pattern relative">
       <div className="container mx-auto px-4 relative z-10">
         
         {/* --- LEADERSHIP TABS --- */}
-        <div className="mb-20">
+        <div className="mb-1">
           <div className="text-center mb-10">
             <span className="text-gold font-medium uppercase tracking-wider">Meet Our Team</span>
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-secondary mt-2">
@@ -272,7 +256,8 @@ export function LeadersSection() {
             </p>
           </div>
 
-          <Tabs defaultValue="management" className="w-full">
+          {/* 5. Tabs now controlled by state using 'value' and 'onValueChange' */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="flex justify-center mb-10">
               <TabsList className="grid w-full max-w-md grid-cols-2 bg-secondary/5 border border-gold/20">
                 <TabsTrigger 
@@ -306,44 +291,6 @@ export function LeadersSection() {
               </div>
             </TabsContent>
           </Tabs>
-        </div>
-
-        {/* --- COMMUNITY DIRECTORY --- */}
-        <div className="pt-10 border-t border-gold/10">
-          <div className="text-center mb-12">
-            <span className="text-gold font-medium uppercase tracking-wider">Support Local</span>
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-secondary mt-2">
-              Community Business Directory
-            </h2>
-            <div className="section-divider w-32 mx-auto mt-4" />
-            <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
-              Connect with trusted businesses owned by our community members
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
-            {services.map((service, index) => (
-              <Card key={index} className="border-gold/20 hover:shadow-lg hover:border-saffron/30 transition-all duration-300">
-                <CardContent className="p-5">
-                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-saffron/20 to-gold/20 flex items-center justify-center mb-3">
-                    <Briefcase className="h-6 w-6 text-saffron" />
-                  </div>
-                  <span className="text-xs font-medium text-gold bg-gold/10 px-2 py-0.5 rounded">
-                    {service.category}
-                  </span>
-                  <h4 className="font-semibold text-foreground mt-2">{service.name}</h4>
-                  <p className="text-sm text-muted-foreground">{service.owner}</p>
-                  <p className="text-sm text-saffron font-medium mt-2">{service.phone}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="text-center mt-8">
-            <Button variant="outline" className="border-gold text-gold hover:bg-gold hover:text-white">
-              View Full Directory
-            </Button>
-          </div>
         </div>
       </div>
     </section>

@@ -2,7 +2,7 @@ import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
 import { CalendarSection } from "@/components/CalendarSection";
 import { ResourceLibrary } from "@/components/ResourceLibrary";
-import { LeadersSection } from "@/components/LeadersSection";
+// import { LeadersSection } from "@/components/LeadersSection";
 import { EngagementSection } from "@/components/EngagementSection";
 import { Footer } from "@/components/Footer";
 
@@ -14,8 +14,8 @@ const Index = () => {
         <HeroSection />
         <CalendarSection />
         <ResourceLibrary />
-        <LeadersSection />
-        <EngagementSection />
+         {/* <LeadersSection />  */}
+        <EngagementSection /> 
       </main>
       <Footer />
     </div>

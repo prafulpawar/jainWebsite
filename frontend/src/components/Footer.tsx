@@ -7,11 +7,12 @@ import { useToast } from "@/hooks/use-toast";
 
 
 const quickLinks = [
+  
   { name: "Home", href: "/" },
   { name: "About Us", href: "/about" },
-  { name: "Events Calendar", href: "/events#calendar" },
-  { name: "Temple Services", href: "/services" },
-  { name: "Resource Library", href: "/resources" },
+  { name: "Events", href: "/events#calendar" },
+  // { name: "Temple Services", href: "/services" },
+  { name: "Resources ", href: "/resources" },
   { name: "Community", href: "/events#groups" },
 ];
 
@@ -145,7 +146,7 @@ export function Footer() {
         {/* Map */}
         <div className="mt-12 rounded-lg overflow-hidden border border-gold/20">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2887.269456789!2d-79.38318368450188!3d43.65322797912127!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDPCsDM5JzExLjYiTiA3OcKwMjInNTIuMyJX!5e0!3m2!1sen!2sca!4v1234567890123!5m2!1sen!2sca"
+            src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d11526.134626821879!2d-79.297638!3d43.76178!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89d4d2191c06747f%3A0xb276a3614cd9b804!2s441%20Ellesmere%20Rd!5e0!3m2!1sen!2sus!4v1770360106924!5m2!1sen!2sus"
             width="100%"
             height="200"
             style={{ border: 0 }}
@@ -155,6 +156,8 @@ export function Footer() {
             title="JSOT Location"
             className="grayscale hover:grayscale-0 transition-all duration-500"
           />
+
+       
         </div>
       </div>
 

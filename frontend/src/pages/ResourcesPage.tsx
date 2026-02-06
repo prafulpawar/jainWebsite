@@ -2,12 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Building2, Mail } from "lucide-react";
+import { Building2, Mail } from "lucide-react"; // Mail icon wapas add kiya
 
 // Import your images here
 import exteriorImg1 from "@/assets/EXTERIOR-VIEW-CAM-01-768x384.jpg";
@@ -16,7 +11,6 @@ import exteriorImg2 from "@/assets/EXTERIOR-VIEW-CAM-02-300x106.jpg";
 const ResourcesPage = () => {
   const location = useLocation();
 
-  // Scroll to section based on URL hash (same logic as EventsPage)
   useEffect(() => {
     if (location.hash) {
       const id = location.hash.replace("#", "");
@@ -112,77 +106,30 @@ const ResourcesPage = () => {
         {/* ---------------- NEWSLETTER SUBSCRIPTION SECTION ---------------- */}
         <section id="subscribe-to-newsletter" className="py-20 bg-muted/30 border-t border-gold/20 scroll-mt-20">
           <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto">
-              <Card className="shadow-2xl border-gold/20">
-                <CardHeader className="bg-gradient-to-r from-secondary to-maroon text-white rounded-t-lg p-8 text-center">
-                  <div className="mx-auto w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-4 backdrop-blur-sm">
-                    <Mail className="h-8 w-8 text-gold" />
-                  </div>
-                  <CardTitle className="text-3xl font-serif font-bold">Subscribe to Newsletter</CardTitle>
-                  <p className="text-white/80 mt-2">Subscribe to our mailing list to receive the latest updates</p>
-                </CardHeader>
-                
-                <CardContent className="p-8">
-                  <p className="text-sm text-right text-muted-foreground mb-6">* indicates required</p>
-                  
-                  <form className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName" className="text-secondary font-semibold">Member First Name *</Label>
-                        <Input id="firstName" placeholder="Enter first name" required className="border-gold/30 focus:border-saffron" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName" className="text-secondary font-semibold">Member Last Name *</Label>
-                        <Input id="lastName" placeholder="Enter last name" required className="border-gold/30 focus:border-saffron" />
-                      </div>
-                    </div>
+            <div className="w-full max-w-4xl mx-auto shadow-2xl rounded-lg bg-white overflow-hidden">
+              
+              {/* Header Section */}
+              <div className="bg-gradient-to-r from-secondary to-maroon text-white p-8 text-center">
+                <div className="mx-auto w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-4 backdrop-blur-sm">
+                  <Mail className="h-8 w-8 text-gold" />
+                </div>
+                <h3 className="text-3xl font-serif font-bold">Subscribe to Newsletter</h3>
+                <p className="text-white/80 mt-2">Subscribe to our mailing list to receive the latest updates</p>
+              </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-secondary font-semibold">Email Address *</Label>
-                      <Input id="email" type="email" placeholder="you@example.com" required className="border-gold/30 focus:border-saffron" />
-                    </div>
+              {/* Iframe Section */}
+              <div className="w-full overflow-hidden relative">
+                <iframe 
+                  src="https://jsotcanada.us5.list-manage.com/subscribe?u=e682257a4e2feef5d84bfa7cc&id=fccf434d13" 
+                  title="JSOT Newsletter Subscription"
+                  scrolling="no" 
+                  className="w-full h-[850px] md:h-[1120px] border-none block"
+                  style={{ 
+                    overflow: 'hidden', 
+                  }}
+                />
+              </div>
 
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="age" className="text-secondary font-semibold">Age</Label>
-                        <Input id="age" type="number" placeholder="Enter age" className="border-gold/30 focus:border-saffron" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="memberNumber" className="text-secondary font-semibold">Life Member number</Label>
-                        <Input id="memberNumber" placeholder="Enter member #" className="border-gold/30 focus:border-saffron" />
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-                       <div className="space-y-2">
-                        <Label htmlFor="cell" className="text-secondary font-semibold">Cell Phone</Label>
-                        <Input id="cell" type="tel" placeholder="(555) 555-5555" className="border-gold/30 focus:border-saffron" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="profession" className="text-secondary font-semibold">Profession</Label>
-                        <Select>
-                          <SelectTrigger className="border-gold/30 focus:ring-saffron">
-                            <SelectValue placeholder="Select Profession" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="accountancy">Accountancy/Finance</SelectItem>
-                            <SelectItem value="engineer">Engineer</SelectItem>
-                            <SelectItem value="healthcare">Healthcare</SelectItem>
-                            <SelectItem value="retail">Retail</SelectItem>
-                            <SelectItem value="other">Any other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="pt-4">
-                      <Button className="w-full bg-gradient-to-r from-saffron to-gold hover:opacity-90 text-white font-bold py-6 text-lg">
-                        SUBSCRIBE
-                      </Button>
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
             </div>
           </div>
         </section>

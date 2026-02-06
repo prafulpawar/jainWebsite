@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -29,7 +30,7 @@ const affiliatedGroups = [
     icon: BookOpen,
     description: "In the last 40 years, Toronto has seen a rapid growth of Jains. Pathshala instills spiritual development, self-awareness, moral consciousness, and Jain identity in students aged 5 to 18.",
     details: ["Classes run September to June", "Basic Jain principles", "Moral consciousness & social well-being"],
-    registrationLink: "https://docs.google.com/forms/d/e/1FAIpQLScFhbx7UE3RVzkZsJvNQfq5_WcPs3o6PFQ7_-qmcCz_UlN7Gw/viewform"
+    internalLink: "/pathshala"
   },
   {
     title: "Youth Jains of Toronto",
@@ -79,7 +80,7 @@ const EventsPage = () => {
   const [categories, setCategories] = useState(["All"]);
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date());
-  
+
   // *** NEW STATE: Track specifically selected date from calendar ***
   const [selectedDate, setSelectedDate] = useState(null);
 
@@ -164,7 +165,7 @@ const EventsPage = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedFilter, selectedDate]); // Reset page when filter or date changes
+  }, [selectedFilter, selectedDate]);
 
   useEffect(() => {
     if (!loading && location.hash) {
@@ -190,14 +191,11 @@ const EventsPage = () => {
     return allEvents.filter(event => isSameDay(getEventDate(event), date));
   };
 
-  // *** LOGIC UPDATE: Determine which events to show ***
-  // If selectedDate is present, show ONLY events for that date (from allEvents, including past).
-  // Otherwise, use the Category filter on upcomingEvents.
   const getDisplayEvents = () => {
     if (selectedDate) {
       return allEvents.filter(event => isSameDay(getEventDate(event), selectedDate));
     }
-    
+
     return selectedFilter === "All"
       ? upcomingEvents
       : upcomingEvents.filter(e => e.type === selectedFilter);
@@ -214,15 +212,12 @@ const EventsPage = () => {
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
-      // Optional: Scroll back to top of list
       document.getElementById('upcoming-list-top')?.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  // Handler for clicking a calendar date
   const handleDateClick = (day) => {
     setSelectedDate(day);
-    // When a user clicks a date, we want to ensure the list is visible (useful on mobile)
     document.getElementById('upcoming-list-top')?.scrollIntoView({ behavior: 'smooth' });
   };
 
@@ -230,7 +225,6 @@ const EventsPage = () => {
     setSelectedDate(null);
   };
 
-  // Gallery functions (unchanged)
   const openGallery = (event) => {
     if (event.galleryImages && event.galleryImages.length > 0) {
       setSelectedEvent(event);
@@ -275,6 +269,11 @@ const EventsPage = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isGalleryOpen, nextImage, prevImage]);
 
+  // *** UPDATE: Filter past events to only show those with photos ***
+  const pastEventsWithPhotos = pastEvents.filter(
+    (event) => event.galleryImages && event.galleryImages.length > 0
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -309,7 +308,7 @@ const EventsPage = () => {
                       {selectedDate ? (
                         <span className="flex items-center gap-2">
                           Events for {format(selectedDate, "MMM d, yyyy")}
-                          <button 
+                          <button
                             onClick={clearDateSelection}
                             className="text-xs bg-muted text-foreground px-2 py-1 rounded-full border hover:bg-muted/80 flex items-center gap-1 ml-2 font-sans font-normal"
                           >
@@ -328,8 +327,8 @@ const EventsPage = () => {
                               key={filter}
                               onClick={() => setSelectedFilter(filter)}
                               className={`flex-shrink-0 whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-all border border-transparent ${selectedFilter === filter
-                                  ? "bg-saffron text-primary-foreground shadow-md"
-                                  : "bg-muted text-muted-foreground hover:bg-muted/80 hover:border-gold/20"
+                                ? "bg-saffron text-primary-foreground shadow-md"
+                                : "bg-muted text-muted-foreground hover:bg-muted/80 hover:border-gold/20"
                                 }`}
                             >
                               {filter}
@@ -419,13 +418,13 @@ const EventsPage = () => {
                         <div>
                           <p className="font-semibold text-lg">No events found</p>
                           <p className="text-sm">
-                            {selectedDate 
+                            {selectedDate
                               ? `There are no events scheduled for ${format(selectedDate, "MMMM d, yyyy")}.`
                               : `No upcoming events found for "${selectedFilter}".`
                             }
                           </p>
                           {selectedDate && (
-                            <button 
+                            <button
                               onClick={clearDateSelection}
                               className="mt-4 text-saffron hover:underline text-sm font-medium"
                             >
@@ -483,8 +482,8 @@ const EventsPage = () => {
                                   ${!isCurrentMonth ? "text-muted-foreground/30" : "text-foreground"}
                                   
                                   /* Selection styling */
-                                  ${isSelected 
-                                    ? "ring-2 ring-secondary ring-offset-2 z-10" 
+                                  ${isSelected
+                                    ? "ring-2 ring-secondary ring-offset-2 z-10"
                                     : ""
                                   }
                                   
@@ -502,7 +501,7 @@ const EventsPage = () => {
                               >
                                 {format(day, "d")}
                               </button>
-                              
+
                               {/* Hover Tooltip */}
                               {hasEvent && (
                                 <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 hidden md:group-hover:block w-max max-w-[150px]">
@@ -570,6 +569,8 @@ const EventsPage = () => {
                       </div>
                       <CardTitle className="font-serif text-xl text-secondary group-hover:text-maroon transition-colors">{group.title}</CardTitle>
                     </CardHeader>
+                    {/* Inside the affiliatedGroups.map function... */}
+
                     <CardContent className="pt-4 flex-grow flex flex-col">
                       <p className="text-muted-foreground text-sm mb-6 leading-relaxed">{group.description}</p>
                       <ul className="space-y-2 mb-6">
@@ -581,8 +582,18 @@ const EventsPage = () => {
                         ))}
                       </ul>
 
-                      {group.registrationLink && (
-                        <div className="mt-auto pt-4 border-t border-gold/10">
+                      {/* LOGIC CHANGED HERE */}
+                      <div className="mt-auto pt-4 border-t border-gold/10">
+                        {group.internalLink ? (
+                          // For Pathshala: Link to internal page
+                          <Link
+                            to={group.internalLink}
+                            className="inline-flex items-center justify-center w-full px-4 py-2.5 text-sm font-medium text-white transition-all bg-secondary hover:bg-secondary/90 rounded-md shadow-sm hover:shadow group-hover:translate-y-[-2px]"
+                          >
+                            View More<ChevronRight className="w-4 h-4 ml-2" />
+                          </Link>
+                        ) : group.registrationLink ? (
+                          // For others: External Link
                           <a
                             href={group.registrationLink}
                             target="_blank"
@@ -591,8 +602,8 @@ const EventsPage = () => {
                           >
                             Register Now <ExternalLink className="w-4 h-4 ml-2" />
                           </a>
-                        </div>
-                      )}
+                        ) : null}
+                      </div>
                     </CardContent>
                   </Card>
                 );
@@ -602,7 +613,7 @@ const EventsPage = () => {
         </section>
 
         {/* ---------------- PAST EVENTS SECTION (Horizontal Scroll) ---------------- */}
-        {pastEvents.length > 0 && (
+        {pastEventsWithPhotos.length > 0 && (
           <section id="past" className="py-16 bg-card border-t border-gold/10 scroll-mt-16">
             <div className="container mx-auto px-4">
               <div className="text-center mb-10">
@@ -615,41 +626,29 @@ const EventsPage = () => {
 
               {/* Scroll Container */}
               <div className="flex overflow-x-auto pb-8 gap-4 md:gap-6 snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                {pastEvents.map((event, index) => {
-                  const hasImages = event.galleryImages && event.galleryImages.length > 0;
-                  const coverImage = hasImages ? getImageUrl(event.galleryImages[0]) : null;
+                {pastEventsWithPhotos.map((event, index) => {
+                  const hasImages = true; // We know this is true because of the filter
+                  const coverImage = getImageUrl(event.galleryImages[0]);
 
                   return (
                     <div key={index} className="snap-center shrink-0 w-[85vw] sm:w-[350px]">
                       <Card
                         onClick={() => openGallery(event)}
-                        className={`overflow-hidden border-gold/20 group hover:shadow-xl transition-all bg-muted/30 h-full flex flex-col
-                  ${hasImages ? 'cursor-pointer hover:ring-2 ring-saffron/50' : 'cursor-default'}`}
+                        className={`overflow-hidden border-gold/20 group hover:shadow-xl transition-all bg-muted/30 h-full flex flex-col cursor-pointer hover:ring-2 ring-saffron/50`}
                       >
-                        {/* Image Preview or Fallback Pattern */}
+                        {/* Image Preview */}
                         <div className="relative h-48 overflow-hidden bg-secondary/10 flex items-center justify-center group shrink-0">
-                          {hasImages ? (
-                            <>
-                              <img
-                                src={coverImage}
-                                alt={event.title}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                              />
-                              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <ImageIcon className="h-8 w-8 text-white drop-shadow-lg" />
-                              </div>
-                              <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
-                                {event.galleryImages.length} Photos
-                              </div>
-                            </>
-                          ) : (
-                            <>
-                              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
-                              <div className="text-center z-10 p-4">
-                                <h3 className="font-serif text-2xl font-bold text-secondary opacity-20">{event.year}</h3>
-                              </div>
-                            </>
-                          )}
+                          <img
+                            src={coverImage}
+                            alt={event.title}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          />
+                          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <ImageIcon className="h-8 w-8 text-white drop-shadow-lg" />
+                          </div>
+                          <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
+                            {event.galleryImages.length} Photos
+                          </div>
 
                           <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent text-white pointer-events-none">
                             <h3 className="font-serif text-lg font-semibold truncate">{event.title}</h3>

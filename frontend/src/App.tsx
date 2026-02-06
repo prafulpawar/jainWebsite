@@ -14,6 +14,9 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import ResourcesPage from "./pages/ResourcesPage";
 import ContactPage from "./pages/ContactPage";
+import Visit from "./pages/Visit";
+import Pathshala from "./pages/PathshalaPage";
+
 
 const queryClient = new QueryClient();
 
@@ -39,10 +42,12 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/about" element={<About />} /> 
           <Route path="/events" element={<Events />} />
+          <Route path="/pathshala" element={<Pathshala />} /> 
           <Route path="/services" element={<Services />} />
           <Route path="/resources" element={<ResourcesPage />} />
           <Route path="/contact" element={<ContactPage />} />
-
+          <Route path='/visitor' element={<Visit/>} />
+          
 
           {/* --- Admin Routes --- */}
           <Route path="/admin/login" element={<AdminLogin />} />

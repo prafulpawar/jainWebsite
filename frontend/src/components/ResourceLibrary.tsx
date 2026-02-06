@@ -1,61 +1,18 @@
-import { useState } from "react";
-import { BookOpen, Video, MessageSquare, ExternalLink, Play } from "lucide-react";
+import { useState, useEffect } from "react";
+import { BookOpen, Video, MessageSquare, ExternalLink, Play, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import api from "@/utils/api"; 
+
+// Helper to define backend base URL for images
+const API_BASE_URL = "http://localhost:5000";
 
 const tabs = [
-  { id: "articles", label: "Articles", icon: BookOpen },
-  { id: "videos", label: "Video Discourses", icon: Video }
+  { id: "articles", label: "Featured Articles", icon: BookOpen },
+  { id: "videos", label: "Featured Discourses", icon: Video },
 ];
 
-const articles = [
-  {
-    title: "Understanding Ahimsa in Daily Life",
-    author: "Dr. Pratik Shah",
-    date: "Dec 15, 2024",
-    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop",
-    excerpt: "Exploring how the principle of non-violence can be applied in modern everyday situations.",
-  },
-  {
-    title: "The Five Great Vows (Mahavrats)",
-    author: "Acharya Vidyanand Ji",
-    date: "Dec 10, 2024",
-    image: "https://images.unsplash.com/photo-1544928147-79a2dbc1f389?w=400&h=300&fit=crop",
-    excerpt: "A comprehensive guide to the five fundamental vows that form the foundation of Jain ethics.",
-  },
-  {
-    title: "Jain Festivals and Their Significance",
-    author: "Sadhvi Prabhavati",
-    date: "Dec 5, 2024",
-    image: "https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?w=400&h=300&fit=crop",
-    excerpt: "Understanding the spiritual meaning behind major Jain festivals celebrated throughout the year.",
-  },
-];
-
-const videos = [
-  {
-    title: "Navkar Mantra - Complete Explanation",
-    speaker: "Gurudev Sri Chitrabhanu",
-    duration: "45:30",
-    views: "12.5K",
-    thumbnail: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400&h=300&fit=crop",
-  },
-  {
-    title: "Meditation Techniques for Beginners",
-    speaker: "Acharya Mahapragya",
-    duration: "32:15",
-    views: "8.2K",
-    thumbnail: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&h=300&fit=crop",
-  },
-  {
-    title: "Jain Philosophy: Anekantavada",
-    speaker: "Dr. Kumarpal Desai",
-    duration: "58:45",
-    views: "6.8K",
-    thumbnail: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=300&fit=crop",
-  },
-];
-
+// Forums remain hardcoded as requested
 const forums = [
   {
     title: "How do you practice Jainism with young children?",
@@ -89,6 +46,48 @@ const forums = [
 
 export function ResourceLibrary() {
   const [activeTab, setActiveTab] = useState("articles");
+  
+  // State for dynamic data
+  const [articles, setArticles] = useState([]);
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch Data on Component Mount
+  useEffect(() => {
+    const fetchResources = async () => {
+      try {
+        setLoading(true);
+        // Fetch both endpoints simultaneously
+        const [articlesRes, videosRes] = await Promise.all([
+          api.get('/articles'),
+          api.get('/videos')
+        ]);
+
+        // --- FILTERING LOGIC ADDED HERE ---
+        // Only keep items where isFeatured is true
+        const featuredArticles = articlesRes.data.filter(item => item.isFeatured === true);
+        const featuredVideos = videosRes.data.filter(item => item.isFeatured === true);
+
+        setArticles(featuredArticles);
+        setVideos(featuredVideos);
+      } catch (err) {
+        console.error("Error fetching resources:", err);
+        setError("Failed to load resources. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResources();
+  }, []);
+
+  // Helper to handle image paths (uploads vs external URLs)
+  const getImageUrl = (path) => {
+    if (!path) return "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop"; 
+    if (path.startsWith("http")) return path; 
+    return `${API_BASE_URL}${path}`; 
+  };
 
   return (
     <section id="resources" className="py-16 md:py-24 bg-card">
@@ -101,7 +100,7 @@ export function ResourceLibrary() {
           </h2>
           <div className="section-divider w-32 mx-auto mt-4" />
           <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
-            Explore our collection of articles, video discourses, and community discussions to deepen your understanding of Jain philosophy.
+            Explore our curated collection of featured articles and video discourses to deepen your understanding of Jain philosophy.
           </p>
         </div>
 
@@ -127,72 +126,127 @@ export function ResourceLibrary() {
 
         {/* Content */}
         <div className="max-w-6xl mx-auto">
+          
+          {/* Loading State */}
+          {loading && (
+            <div className="flex justify-center items-center py-20">
+              <Loader2 className="h-8 w-8 animate-spin text-saffron" />
+            </div>
+          )}
+
+          {/* Error State */}
+          {!loading && error && (
+            <div className="text-center py-10 text-red-500">
+              {error}
+            </div>
+          )}
+
           {/* Articles */}
-          {activeTab === "articles" && (
+          {!loading && !error && activeTab === "articles" && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
-              {articles.map((article, index) => (
-                <Card key={index} className="overflow-hidden border-gold/20 hover:shadow-xl transition-all duration-300 group">
-                  <div className="relative h-48 overflow-hidden">
-                    <img
-                      src={article.image}
-                      alt={article.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-secondary/60 to-transparent" />
-                  </div>
-                  <CardContent className="p-5">
-                    <h3 className="font-serif text-lg font-semibold text-secondary mb-2 line-clamp-2 group-hover:text-saffron transition-colors">
-                      {article.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{article.excerpt}</p>
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>{article.author}</span>
-                      <span>{article.date}</span>
+              {articles.length > 0 ? (
+                articles.map((article) => (
+                  <Card key={article.id} className="overflow-hidden border-gold/20 hover:shadow-xl transition-all duration-300 group">
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={getImageUrl(article.image)}
+                        alt={article.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop"; }} 
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-secondary/60 to-transparent" />
+                      {/* Featured Badge */}
+                      <span className="absolute top-2 right-2 bg-yellow-500 text-black text-[10px] font-bold px-2 py-1 rounded shadow-sm">
+                        FEATURED
+                      </span>
                     </div>
-                    <Button variant="link" className="p-0 mt-3 text-saffron">
-                      Read More <ExternalLink className="h-3 w-3 ml-1" />
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+                    <CardContent className="p-5">
+                      <h3 className="font-serif text-lg font-semibold text-secondary mb-2 line-clamp-2 group-hover:text-saffron transition-colors">
+                        {article.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                        {article.excerpt}
+                      </p>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>{article.author}</span>
+                        <span>{article.date}</span>
+                      </div>
+                      {article.externalLink && (
+                        <Button 
+                          variant="link" 
+                          className="p-0 mt-3 text-saffron"
+                          onClick={() => window.open(article.externalLink, '_blank')}
+                        >
+                          Read More <ExternalLink className="h-3 w-3 ml-1" />
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-10">
+                  <div className="bg-gray-50 inline-block p-4 rounded-full mb-3">
+                    <BookOpen className="h-6 w-6 text-gray-400 mx-auto" />
+                  </div>
+                  <p className="text-muted-foreground">No featured articles selected yet.</p>
+                </div>
+              )}
             </div>
           )}
 
           {/* Videos */}
-          {activeTab === "videos" && (
+          {!loading && !error && activeTab === "videos" && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
-              {videos.map((video, index) => (
-                <Card key={index} className="overflow-hidden border-gold/20 hover:shadow-xl transition-all duration-300 group">
-                  <div className="relative h-48 overflow-hidden">
-                    <img
-                      src={video.thumbnail}
-                      alt={video.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-secondary/40 flex items-center justify-center group-hover:bg-secondary/50 transition-colors">
-                      <div className="w-16 h-16 rounded-full bg-saffron/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                        <Play className="h-8 w-8 text-primary-foreground ml-1" />
+              {videos.length > 0 ? (
+                videos.map((video) => (
+                  <Card 
+                    key={video.id} 
+                    className="overflow-hidden border-gold/20 hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                    onClick={() => video.videoLink && window.open(video.videoLink, '_blank')}
+                  >
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={getImageUrl(video.thumbnail)}
+                        alt={video.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&h=300&fit=crop"; }}
+                      />
+                      <div className="absolute inset-0 bg-secondary/40 flex items-center justify-center group-hover:bg-secondary/50 transition-colors">
+                        <div className="w-16 h-16 rounded-full bg-saffron/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                          <Play className="h-8 w-8 text-primary-foreground ml-1" />
+                        </div>
                       </div>
+                      <span className="absolute bottom-2 right-2 bg-secondary/80 text-secondary-foreground text-xs px-2 py-1 rounded">
+                        {video.duration}
+                      </span>
+                      {/* Featured Badge */}
+                      <span className="absolute top-2 right-2 bg-yellow-500 text-black text-[10px] font-bold px-2 py-1 rounded shadow-sm">
+                        FEATURED
+                      </span>
                     </div>
-                    <span className="absolute bottom-2 right-2 bg-secondary/80 text-secondary-foreground text-xs px-2 py-1 rounded">
-                      {video.duration}
-                    </span>
+                    <CardContent className="p-5">
+                      <h3 className="font-serif text-lg font-semibold text-secondary mb-2 line-clamp-2 group-hover:text-saffron transition-colors">
+                        {video.title}
+                      </h3>
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <span>{video.speaker}</span>
+                        <span>{video.views} views</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-10">
+                   <div className="bg-gray-50 inline-block p-4 rounded-full mb-3">
+                    <Video className="h-6 w-6 text-gray-400 mx-auto" />
                   </div>
-                  <CardContent className="p-5">
-                    <h3 className="font-serif text-lg font-semibold text-secondary mb-2 line-clamp-2 group-hover:text-saffron transition-colors">
-                      {video.title}
-                    </h3>
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>{video.speaker}</span>
-                      <span>{video.views} views</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  <p className="text-muted-foreground">No featured videos selected yet.</p>
+                </div>
+              )}
             </div>
           )}
 
-          {/* Forums */}
+          {/* Forums (Static) */}
           {activeTab === "forums" && (
             <div className="space-y-4 animate-fade-in">
               {forums.map((forum, index) => (
@@ -221,7 +275,7 @@ export function ResourceLibrary() {
                 </Card>
               ))}
               <div className="text-center mt-6">
-                <Button variant="maroon">
+                <Button variant="default">
                   <MessageSquare className="h-4 w-4 mr-2" />
                   Join the Discussion
                 </Button>

@@ -2,9 +2,9 @@ import { useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { LeadersSection } from "@/components/LeadersSection";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator"; // Ensure you have this or use standard hr
-import { Leaf, History, Users, ArrowRight } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator"; 
+import { Leaf, History, Users, ArrowRight, Mail } from "lucide-react"; // Added Mail here
 import { useLocation } from "react-router-dom";
 
 const About = () => {
@@ -37,11 +37,20 @@ const About = () => {
   ];
 
   const milestones = [
-    { year: "1974", title: "Establishment", desc: "JSOT established to promote cultural and community services." },
-    { year: "1983", title: "First Home", desc: "Acquired community hall on Parklawn Ave for $110,000." },
-    { year: "1992", title: "Expansion", desc: "Acquired hall on Rosemeade Ave for $1M to serve 250 families." },
-    { year: "2012", title: "Current Home", desc: "Acquired 4+ acres land and building in Scarborough." },
-    { year: "Now", title: "Growth", desc: "Community has grown to over 1200 families." },
+    { year: "1974", title: "Establishment", desc: "JSOT established by a few families to promote cultural services." },
+    { year: "1992", title: "Rosemeade Era", desc: "Acquired Hall on Rosemeade Ave for $1M; membership ~250." },
+    { year: "2012", title: "Scarborough Expansion", desc: "Acquired 4+ acres and building from Greek Community." },
+    { year: "2023", title: "Shikharbandhi Derasar", desc: "First ever in Canada, encompassing Shwetambar & Digambar." },
+    { year: "Today", title: "Community Growth", desc: "Community has grown to over 1200 families." },
+  ];
+
+  // Added Contact List Data for the new card
+  const contactList = [
+    { role: "General Inquiries", email: "info@jsot.ca" },
+    { role: "President, Board of Directors", email: "president@jsot.ca" },
+    { role: "Donations, Accounting", email: "treasurer@jsot.ca" },
+    { role: "Facility Booking, Events", email: "bookings@jsot.ca" },
+    { role: "Pathshala, Education", email: "education@jsot.ca" },
   ];
 
   return (
@@ -51,7 +60,7 @@ const About = () => {
       {/* Hero Banner */}
       <section className="relative h-[40vh] min-h-[300px] flex items-center justify-center overflow-hidden bg-secondary">
         <div className="absolute inset-0 bg-gradient-to-b from-secondary/50 to-secondary z-10" />
-        {/* You can add a background image here */}
+        {/* Background image */}
         <div className="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1604868189265-219fa7f13677?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center" />
         
         <div className="container relative z-20 text-center px-4">
@@ -175,12 +184,22 @@ const About = () => {
 
                {/* Description & Impact */}
                <div className="flex flex-col justify-center space-y-6">
-                 <div className="prose text-muted-foreground">
+                 <div className="prose text-muted-foreground space-y-4">
                    <p>
-                     JSOT is one of the first Jain organizations established in Canada and fifth in North America. Its mandate is not only to promote Jain principles and practice, but also to provide a place of worship for the Jain community in greater Toronto area.
+                     In 1992 JSOT acquired another Community Hall on 48 Rosemeade Ave for One million dollars. At the time of acquisition the membership was around 250 members. Once again the work of the Community guided by its core principals of welcoming everyone resulted in need of a bigger Community Hall. In 2012 Society acquired just over 4 acres of land and a unfinished building, from the Greek Community, in Scarborough.
                    </p>
+                   
                    <p>
-                     From humble beginnings started by a few families in 1974, the community has now grown significantly. The hard work and dedication of all our members promoting a better society has been reflected over the years through many contributions.
+                     After finishing construction, the building has a 7000 sq.ft Auditorium, Four Classrooms for Pathshala, a Seniors Lounge, Children’s play area, Centre office, Board room, 3600 sq.ft. dining hall, modern Kitchen, Handicapped friendly modern washrooms, elevators. Most of all 300 cars parking and easy access to highway 401.
+                     This landmark Jain cultural Centre host visitors from all over the world and from various nationalities. A proposed museum will showcase and preserve rare art, tokens and memorabilia of Jain life and tradition.
+                   </p>
+
+                   <p className="font-medium text-secondary">
+                     In 2023, we finished the construction of first ever Shikharbandhi Derasar in Canada, which encompasses both Shwetambar and Digambar Ghabaras. This will serve as the ultimate legacy of unity, togetherness and worship for all Jains.
+                   </p>
+
+                   <p>
+                     From humble beginnings stated by a few families in 1974, with a vision to have a common community center to promote ideas, teaching and a place to gather and provide social support to both the adults and children coming into the Country the Community has now grown to over 1200 families.
                    </p>
                  </div>
                  
@@ -209,9 +228,54 @@ const About = () => {
         </section>
 
         {/* --- SECTION: LEADERSHIP (Board & Management) --- */}
-        <section id="leadership" className="pt-8">
-           {/* LeadersSection handles Board and Management Committee */}
+        <section id="leadership" className="pt-8 relative">
+           <div id="board" className="absolute -top-28 w-full h-1" />
+           <div id="management" className="absolute -top-28 w-full h-1" />
            <LeadersSection />
+        </section>
+        {/* --- SECTION: DEPARTMENT DIRECTORY --- */}
+        <section id="directory" className="py-1 pb-12 container mx-auto px-4">
+          <div className="max-w-3xl mx-auto">
+            {/* Right Column: Contact Directory */}
+            <Card className="shadow-lg border-gold/20 bg-card h-full">
+              <CardHeader className="bg-gradient-to-r from-secondary to-maroon text-white rounded-t-lg">
+                <CardTitle className="font-serif text-2xl flex items-center gap-2">
+                  <Mail className="h-6 w-6 text-gold" />
+                  Department Directory
+                </CardTitle>
+                <p className="text-white/70 text-sm font-normal pt-1">
+                  Please direct your inquiries to the appropriate department
+                </p>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y divide-border">
+                  {contactList.map((item, index) => (
+                    <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between p-5 hover:bg-muted/30 transition-colors gap-2">
+                      <div className="sm:w-1/2">
+                        <ul className="space-y-1">
+                          {item.role.split(',').map((r, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm text-secondary/90 font-medium">
+                              <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-saffron shrink-0" />
+                              {r.trim()}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="sm:w-1/2 sm:text-right mt-2 sm:mt-0">
+                        <a 
+                          href={`mailto:${item.email}`} 
+                          className="text-saffron hover:text-maroon transition-colors font-medium break-all flex items-center sm:justify-end gap-2 group"
+                        >
+                          <Mail className="h-4 w-4 opacity-50 group-hover:opacity-100" />
+                          {item.email}
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </section>
 
       </main>
