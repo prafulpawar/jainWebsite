@@ -15,7 +15,15 @@ import {
     updateEvent,         
     updateDarshanTiming,
     getEventTypes,
-    addEventType   
+    addEventType,
+    getArticles,
+    addArticle,
+    deleteArticle,
+    getVideos,
+    addVideo,
+    deleteVideo,
+    toggleArticleFeature,
+    toggleVideoFeature
 } from '../controllers/admin.authcontroller.js';
 import { verifyToken } from '../middlewares/authMiddleware.js';
 
@@ -67,5 +75,21 @@ router.delete('/delete-darshan/:id', verifyToken, deleteDarshanTiming);
 
 router.get('/event-types', getEventTypes);
 router.post('/add-event-type', verifyToken, addEventType);
+
+
+// 1. ARTICLES
+router.get('/articles', getArticles);
+// Uses 'image' as the form-data key for the file
+router.post('/add-article', verifyToken, upload.single('image'), addArticle);
+router.delete('/delete-article/:id', verifyToken, deleteArticle);
+router.put('/toggle-featured-article/:id', verifyToken, toggleArticleFeature); 
+
+
+// 2. VIDEOS
+router.get('/videos', getVideos);
+// Uses 'thumbnail' as the form-data key for the file
+router.post('/add-video', verifyToken, upload.single('thumbnail'), addVideo);
+router.delete('/delete-video/:id', verifyToken, deleteVideo);
+router.put('/toggle-featured-video/:id', verifyToken, toggleVideoFeature);
 
 export default router;

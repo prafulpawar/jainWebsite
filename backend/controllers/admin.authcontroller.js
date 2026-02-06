@@ -1,4 +1,4 @@
-import { Admin, Event, Darshan ,EventType } from '../models/index.js';
+import { Admin, Event, Darshan ,EventType , Article, Video } from '../models/index.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -251,6 +251,143 @@ export const addEventType = async (req, res) => {
 
     const newType = await EventType.create({ name });
     res.status(201).json(newType);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// ================= ARTICLES =================
+
+export const getArticles = async (req, res) => {
+  try {
+    const articles = await Article.findAll({ order: [['createdAt', 'DESC']] });
+    res.json(articles);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const addArticle = async (req, res) => {
+  try {
+    const { title, author, date, excerpt, externalLink } = req.body;
+    
+    let imagePath = null;
+    if (req.file) {
+      imagePath = `/uploads/${req.file.filename}`;
+    }
+
+    const newArticle = await Article.create({
+      title,
+      author,
+      date,
+      excerpt,
+      externalLink,
+      image: imagePath
+    });
+
+    res.status(201).json({ message: 'Article added successfully', article: newArticle });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const toggleArticleFeature = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const article = await Article.findByPk(id);
+
+    if (!article) return res.status(404).json({ error: "Article not found" });
+
+    // If currently FALSE, we want to make it TRUE. Check limit first.
+    if (!article.isFeatured) {
+      const count = await Article.count({ where: { isFeatured: true } });
+      if (count >= 3) {
+        return res.status(400).json({ error: "Maximum 3 articles can be featured." });
+      }
+    }
+
+    article.isFeatured = !article.isFeatured;
+    await article.save();
+    res.json({ message: "Status updated", article });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteArticle = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Article.destroy({ where: { id } });
+    res.json({ message: 'Article deleted' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// ================= VIDEOS =================
+
+export const getVideos = async (req, res) => {
+  try {
+    const videos = await Video.findAll({ order: [['createdAt', 'DESC']] });
+    res.json(videos);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const addVideo = async (req, res) => {
+  try {
+    const { title, speaker, duration, views, videoLink } = req.body;
+
+    let thumbnailPath = null;
+    // We only process the image thumbnail here
+    if (req.file) {
+      thumbnailPath = `/uploads/${req.file.filename}`;
+    }
+
+    const newVideo = await Video.create({
+      title,
+      speaker,
+      duration,
+      views, // Can be "12.5K" or whatever user types
+      videoLink,
+      thumbnail: thumbnailPath
+    });
+
+    res.status(201).json({ message: 'Video resource added', video: newVideo });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const toggleVideoFeature = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const video = await Video.findByPk(id);
+
+    if (!video) return res.status(404).json({ error: "Video not found" });
+
+    // If currently FALSE, check limit before enabling
+    if (!video.isFeatured) {
+      const count = await Video.count({ where: { isFeatured: true } });
+      if (count >= 3) {
+        return res.status(400).json({ error: "Maximum 3 videos can be featured." });
+      }
+    }
+
+    video.isFeatured = !video.isFeatured;
+    await video.save();
+    res.json({ message: "Status updated", video });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteVideo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Video.destroy({ where: { id } });
+    res.json({ message: 'Video deleted' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
