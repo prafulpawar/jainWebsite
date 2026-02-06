@@ -524,25 +524,41 @@ const EventsPage = () => {
                   </Card>
                 </div>
 
-                <Card className="border-gold/20 shadow-lg bg-gradient-to-br from-card to-saffron/5">
-                  <CardHeader className="border-b border-gold/20 bg-gradient-to-r from-gold/20 to-saffron/20 py-3">
-                    <CardTitle className="font-serif text-lg text-secondary flex items-center gap-2">
+                {/* --- NEW DAILY DARSHAN DESIGN --- */}
+                <Card className="border-gold/20 shadow-lg bg-gradient-to-br from-card to-saffron/5 h-fit">
+                  <CardHeader className="border-b border-gold/20 bg-gradient-to-r from-gold/20 to-saffron/20">
+                    <CardTitle className="flex items-center gap-2 font-serif text-secondary">
                       <Clock className="h-5 w-5 text-gold" />
-                      Daily Darshan
+                      Daily Darshan Timings
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-4 space-y-3">
-                    {darshanTimings.slice(0, 3).map((t, i) => (
-                      <div key={i} className="border-b border-dashed border-gold/30 pb-2 last:border-0">
-                        <span className="text-xs font-bold text-secondary uppercase block mb-1">{t.dayRange}</span>
-                        <div className="flex flex-col align-center text-sm">
-                          <span className="text-muted-foreground">Start: <span className="text-foreground">{t.startTime}</span></span>
-                          <span className="text-muted-foreground">End: &nbsp; <span className="text-foreground">{t.endTime}</span></span>
-                        </div>
-                      </div>
-                    ))}
+                  
+                  <CardContent className="p-4 flex flex-col">
+                    <div className="space-y-4">
+                      {darshanTimings.length > 0 ? (
+                        darshanTimings.map((timing, index) => (
+                          <div key={index} className="border-b border-gold/10 pb-4 last:border-0 last:pb-0">
+                            <h4 className="font-semibold text-secondary mb-2">{timing.dayRange}</h4>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div className="bg-saffron/10 rounded-md p-2">
+                                <span className="text-muted-foreground block text-xs uppercase font-bold">Start</span>
+                                <span className="font-medium text-foreground"> {timing.startTime}</span>
+                              </div>
+                              <div className="bg-gold/10 rounded-md p-2">
+                                <span className="text-muted-foreground block text-xs uppercase font-bold">End</span>
+                                <span className="font-medium text-foreground"> {timing.endTime}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                         <div className="text-center text-muted-foreground py-4">Timings not updated yet.</div>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
+                 {/* --- END NEW DAILY DARSHAN DESIGN --- */}
+
               </div>
             </div>
           </div>
@@ -569,7 +585,6 @@ const EventsPage = () => {
                       </div>
                       <CardTitle className="font-serif text-xl text-secondary group-hover:text-maroon transition-colors">{group.title}</CardTitle>
                     </CardHeader>
-                    {/* Inside the affiliatedGroups.map function... */}
 
                     <CardContent className="pt-4 flex-grow flex flex-col">
                       <p className="text-muted-foreground text-sm mb-6 leading-relaxed">{group.description}</p>
@@ -582,10 +597,8 @@ const EventsPage = () => {
                         ))}
                       </ul>
 
-                      {/* LOGIC CHANGED HERE */}
                       <div className="mt-auto pt-4 border-t border-gold/10">
                         {group.internalLink ? (
-                          // For Pathshala: Link to internal page
                           <Link
                             to={group.internalLink}
                             className="inline-flex items-center justify-center w-full px-4 py-2.5 text-sm font-medium text-white transition-all bg-secondary hover:bg-secondary/90 rounded-md shadow-sm hover:shadow group-hover:translate-y-[-2px]"
@@ -593,7 +606,6 @@ const EventsPage = () => {
                             View More<ChevronRight className="w-4 h-4 ml-2" />
                           </Link>
                         ) : group.registrationLink ? (
-                          // For others: External Link
                           <a
                             href={group.registrationLink}
                             target="_blank"
@@ -627,7 +639,6 @@ const EventsPage = () => {
               {/* Scroll Container */}
               <div className="flex overflow-x-auto pb-8 gap-4 md:gap-6 snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {pastEventsWithPhotos.map((event, index) => {
-                  const hasImages = true; // We know this is true because of the filter
                   const coverImage = getImageUrl(event.galleryImages[0]);
 
                   return (

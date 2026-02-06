@@ -158,6 +158,7 @@ export function CalendarSection() {
                   Daily Darshan Timings
                 </CardTitle>
               </CardHeader>
+              
               <CardContent className="p-4 flex flex-col">
                 <div className="space-y-4">
                   {timings.length > 0 ? (
