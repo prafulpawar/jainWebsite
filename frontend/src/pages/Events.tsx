@@ -661,7 +661,7 @@ const EventsPage = () => {
                             {event.galleryImages.length} Photos
                           </div>
 
-                          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent text-white pointer-events-none">
+                          <div className="absolute bottom-0 left-0 right-0 p-4  from-black/80 to-transparent text-white pointer-events-none">
                             <h3 className="font-serif text-lg font-semibold truncate">{event.title}</h3>
                             <p className="text-xs opacity-80">{event.dateDisplay}, {event.year}</p>
                           </div>

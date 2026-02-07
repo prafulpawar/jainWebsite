@@ -154,7 +154,7 @@ export function ResourceLibrary() {
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop"; }} 
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-secondary/60 to-transparent" />
+                      <div className="absolute inset-0 from-secondary/60 to-transparent" />
                       {/* Featured Badge */}
                       <span className="absolute top-2 right-2 bg-yellow-500 text-black text-[10px] font-bold px-2 py-1 rounded shadow-sm">
                         FEATURED
@@ -211,7 +211,7 @@ export function ResourceLibrary() {
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&h=300&fit=crop"; }}
                       />
-                      <div className="absolute inset-0 bg-secondary/40 flex items-center justify-center group-hover:bg-secondary/50 transition-colors">
+                      <div className="absolute inset-0  flex items-center justify-center group-hover:bg-secondary/50 transition-colors">
                         <div className="w-16 h-16 rounded-full bg-saffron/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                           <Play className="h-8 w-8 text-primary-foreground ml-1" />
                         </div>
@@ -230,7 +230,7 @@ export function ResourceLibrary() {
                       </h3>
                       <div className="flex items-center justify-between text-sm text-muted-foreground">
                         <span>{video.speaker}</span>
-                        <span>{video.views} views</span>
+                        {/* <span>{video.views} views</span> */}
                       </div>
                     </CardContent>
                   </Card>

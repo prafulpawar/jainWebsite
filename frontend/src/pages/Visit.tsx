@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,9 +24,11 @@ import {
   Navigation
 } from "lucide-react";
 import { useLocation } from "react-router-dom";
+import api from "@/utils/api";
 
 const Visit = () => {
   const { hash } = useLocation();
+  const [templeHours, setTempleHours] = useState([]);
 
   // Handle Scroll to Section on load
   useEffect(() => {
@@ -41,6 +43,19 @@ const Visit = () => {
       window.scrollTo(0, 0);
     }
   }, [hash]);
+
+  // Fetch Temple Hours (Darshan)
+  useEffect(() => {
+    const fetchHours = async () => {
+      try {
+        const response = await api.get("/darshan");
+        setTempleHours(response.data);
+      } catch (error) {
+        console.error("Error fetching temple hours:", error);
+      }
+    };
+    fetchHours();
+  }, []);
 
   const guidelines = [
     {
@@ -146,8 +161,22 @@ const Visit = () => {
                   </div>
                   <div>
                     <h3 className="font-bold text-lg text-secondary">Opening Hours</h3>
-                    <p className="text-muted-foreground">Everyday (Mon – Sun)</p>
-                    <p className="text-xl font-medium text-gold">9:00 AM – 6:00 PM</p>
+                    {templeHours.length > 0 ? (
+                      templeHours.map((hour, index) => (
+                        <div key={index} className={index > 0 ? "mt-2" : ""}>
+                          <p className="text-muted-foreground">{hour.dayRange}</p>
+                          <p className="text-xl font-medium text-gold">
+                            {hour.startTime} – {hour.endTime}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      // Fallback if data hasn't loaded
+                      <>
+                        <p className="text-muted-foreground">Everyday (Mon – Sun)</p>
+                        <p className="text-xl font-medium text-gold">9:00 AM – 6:00 PM</p>
+                      </>
+                    )}
                   </div>
                 </div>
 
