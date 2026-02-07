@@ -4,6 +4,7 @@ import { CalendarSection } from "@/components/CalendarSection";
 import { ResourceLibrary } from "@/components/ResourceLibrary";
 // import { LeadersSection } from "@/components/LeadersSection";
 import { EngagementSection } from "@/components/EngagementSection";
+import {WelcomeSection} from "@/components/WelcomeSection";
 import { Footer } from "@/components/Footer";
 
 const Index = () => {
@@ -12,9 +13,11 @@ const Index = () => {
       <Header />
       <main>
         <HeroSection />
+         <WelcomeSection/>
         <CalendarSection />
         <ResourceLibrary />
          {/* <LeadersSection />  */}
+        
         <EngagementSection /> 
       </main>
       <Footer />
