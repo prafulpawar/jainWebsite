@@ -6,28 +6,22 @@ const checkIfEventIsPast = (dateString, timeString) => {
   if (!dateString || !timeString) return false;
 
   try {
-    const today = new Date();
-    const eventDate = new Date(dateString);
-    const todayZero = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const eventDateZero = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
-    if (eventDateZero < todayZero) {
-      return true; 
-    }
-    if (eventDateZero > todayZero) {
-      return false;
-    }
-    const [timePart, modifier] = timeString.split(' ');
-    let [hours, minutes] = timePart.split(':');
+    // 1. Create a Date object for the Event
+    // dateString format from frontend: "YYYY-MM-DD"
+    // timeString format from HTML5 input: "HH:mm" (24-hour format)
+    
+    // Combine them into an ISO-like string for parsing
+    const eventDateTimeString = `${dateString}T${timeString}:00`;
+    const eventDate = new Date(eventDateTimeString);
+    const now = new Date();
 
-    if (hours === '12') {
-      hours = '00';
+    // Check if the date is valid
+    if (isNaN(eventDate.getTime())) {
+      console.error("Invalid Date/Time format:", eventDateTimeString);
+      return false; 
     }
-    if (modifier === 'PM') {
-      hours = parseInt(hours, 10) + 12;
-    }
-    const eventTimeDate = new Date(todayZero);
-    eventTimeDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0);
-    return eventTimeDate < new Date(); 
+
+    return eventDate < now;
   } catch (error) {
     console.error("Time parsing error:", error);
     return false; 
@@ -70,29 +64,24 @@ export const adminLogout = (req, res) => {
   res.json({ message: 'Logout successful' });
 };
 
-
 export const addEvent = async (req, res) => {
   try {
     const { fullDate, time } = req.body;
     let eventData = { ...req.body };
 
-    // 1. Check if the event is in the past or future based on current time
+    // Check if past
     const isPast = checkIfEventIsPast(fullDate, time);
 
-    // 2. Handle Image Uploads
-    // Logic: Only allow saving images if the event is actually in the PAST.
-    // If user tries to upload images for a future event, we ignore them (or you could throw error)
+    // Logic: Only allow saving images if the event is strictly in the PAST.
     if (isPast && req.files && req.files.length > 0) {
       const images = req.files.map(file => `/uploads/${file.filename}`);
-      eventData.galleryImages = JSON.stringify(images); // Store as JSON string if using SQL
+      eventData.galleryImages = JSON.stringify(images); 
     } else {
-      // If future event, force gallery to be empty even if files were sent
+      // Future events shouldn't have gallery images yet
       eventData.galleryImages = JSON.stringify([]);
     }
 
     const event = await Event.create(eventData);
-    console.log("Event Created:", event.title, "| Is Past:", isPast);
-    
     res.status(201).json({ message: 'Event added', event });
   } catch (error) {
     console.error(error);
@@ -102,8 +91,65 @@ export const addEvent = async (req, res) => {
 
 export const getEvents = async (req, res) => {
   try {
-    const events = await Event.findAll();
+    const events = await Event.findAll({
+      order: [['fullDate', 'ASC']] // Order by date usually helps
+    });
     res.json(events);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateEvent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { fullDate, time } = req.body;
+
+    const existingEvent = await Event.findOne({ where: { id } });
+    if (!existingEvent) return res.status(404).json({ message: 'Event not found' });
+
+    let updateData = { ...req.body };
+
+    // Check strict past status logic for images
+    // Note: We check the NEW date/time being submitted
+    const isPast = checkIfEventIsPast(fullDate || existingEvent.fullDate, time || existingEvent.time);
+
+    if (req.files && req.files.length > 0) {
+        if(isPast) {
+            const newImages = req.files.map(file => `/uploads/${file.filename}`);
+            
+            // Parse existing images
+            let currentImages = [];
+            try {
+                currentImages = existingEvent.galleryImages ? JSON.parse(existingEvent.galleryImages) : [];
+                if (!Array.isArray(currentImages)) currentImages = [];
+            } catch (e) { currentImages = []; }
+
+            // Combine old and new
+            updateData.galleryImages = JSON.stringify([...currentImages, ...newImages]);
+        } else {
+            // If user somehow sends files for a future event, ignore them
+            // Keep existing images (if any) or do nothing
+             delete updateData.galleryImages; 
+        }
+    }
+
+    await Event.update(updateData, { where: { id } });
+    const updatedEvent = await Event.findByPk(id); // Fetch fresh data
+    
+    res.status(200).json({ message: 'Event updated successfully', event: updatedEvent });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteEvent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await Event.destroy({ where: { id } }); 
+    if (deleted) res.status(200).json({ message: 'Event deleted successfully' });
+    else res.status(404).json({ message: 'Event not found' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -128,20 +174,6 @@ export const getDarshanTimings = async (req, res) => {
   }
 };
 
-export const deleteEvent = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const deleted = await Event.destroy({ where: { id } }); 
-    
-    if (deleted) {
-      res.status(200).json({ message: 'Event deleted successfully' });
-    } else {
-      res.status(404).json({ message: 'Event not found' });
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 
 export const deleteDarshanTiming = async (req, res) => {
@@ -160,44 +192,7 @@ export const deleteDarshanTiming = async (req, res) => {
 };
 
 
-export const updateEvent = async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    // Get existing event to handle merging images (optional logic)
-    const existingEvent = await Event.findOne({ where: { id } });
-    if (!existingEvent) return res.status(404).json({ message: 'Event not found' });
 
-    let updateData = { ...req.body };
-
-    // Handle Image Uploads
-    if (req.files && req.files.length > 0) {
-      const newImages = req.files.map(file => `/uploads/${file.filename}`);
-      
-      // If you want to Append to existing images:
-      let currentImages = existingEvent.galleryImages || [];
-      // Ensure currentImages is an array (parsing if stored as string in some DBs)
-      if (typeof currentImages === 'string') currentImages = JSON.parse(currentImages);
-      
-      updateData.galleryImages = [...currentImages, ...newImages];
-    }
-
-    // Update DB
-    const [updated] = await Event.update(updateData, {
-      where: { id: id }
-    });
-
-    if (updated) {
-      const updatedEvent = await Event.findOne({ where: { id: id } });
-      res.status(200).json({ message: 'Event updated successfully', event: updatedEvent });
-    } else {
-      res.status(404).json({ message: 'Event not found' });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
-  }
-};
 
 export const updateDarshanTiming = async (req, res) => {
   try {
