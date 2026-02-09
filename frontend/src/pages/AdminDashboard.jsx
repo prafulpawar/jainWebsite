@@ -346,7 +346,7 @@ const AdminDashboard = () => {
       const formData = new FormData();
       formData.append('title', videoData.title);
       formData.append('speaker', videoData.speaker);
-      formData.append('duration', videoData.duration);
+      // formData.append('duration', videoData.duration);
       formData.append('videoLink', videoData.videoLink);
       if (selectedFiles.length > 0) formData.append('thumbnail', selectedFiles[0]);
 
@@ -872,11 +872,6 @@ const AdminDashboard = () => {
                     <div className="space-y-2">
                       <label className="text-xs font-semibold text-gray-500 uppercase">Speaker / Channel</label>
                       <Input placeholder="e.g. Temple Channel" value={videoData.speaker} onChange={e => setVideoData({ ...videoData, speaker: e.target.value })} />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Duration</label>
-                      <Input placeholder="e.g. 14:20" value={videoData.duration} onChange={e => setVideoData({ ...videoData, duration: e.target.value })} />
                     </div>
                     
                     <div className="space-y-2">

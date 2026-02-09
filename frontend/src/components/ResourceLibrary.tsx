@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { BookOpen, Video, MessageSquare, ExternalLink, Play, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import api from "@/utils/api"; 
+import api from "@/utils/api";
 
 // Helper to define backend base URL for images
 const API_BASE_URL = "http://localhost:5000";
@@ -46,7 +46,7 @@ const forums = [
 
 export function ResourceLibrary() {
   const [activeTab, setActiveTab] = useState("articles");
-  
+
   // State for dynamic data
   const [articles, setArticles] = useState([]);
   const [videos, setVideos] = useState([]);
@@ -84,9 +84,9 @@ export function ResourceLibrary() {
 
   // Helper to handle image paths (uploads vs external URLs)
   const getImageUrl = (path) => {
-    if (!path) return "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop"; 
-    if (path.startsWith("http")) return path; 
-    return `${API_BASE_URL}${path}`; 
+    if (!path) return "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop";
+    if (path.startsWith("http")) return path;
+    return `${API_BASE_URL}${path}`;
   };
 
   return (
@@ -111,11 +111,10 @@ export function ResourceLibrary() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-md font-medium transition-all ${
-                  activeTab === tab.id
-                    ? "bg-saffron text-primary-foreground shadow-md"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={`flex items-center gap-2 px-6 py-3 rounded-md font-medium transition-all ${activeTab === tab.id
+                  ? "bg-saffron text-primary-foreground shadow-md"
+                  : "text-muted-foreground hover:text-foreground"
+                  }`}
               >
                 <tab.icon className="h-4 w-4" />
                 <span className="hidden sm:inline">{tab.label}</span>
@@ -126,7 +125,7 @@ export function ResourceLibrary() {
 
         {/* Content */}
         <div className="max-w-6xl mx-auto">
-          
+
           {/* Loading State */}
           {loading && (
             <div className="flex justify-center items-center py-20">
@@ -152,7 +151,7 @@ export function ResourceLibrary() {
                         src={getImageUrl(article.image)}
                         alt={article.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop"; }} 
+                        onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop"; }}
                       />
                       <div className="absolute inset-0 from-secondary/60 to-transparent" />
                       {/* Featured Badge */}
@@ -172,14 +171,22 @@ export function ResourceLibrary() {
                         <span>{article.date}</span>
                       </div>
                       {article.externalLink && (
-                        <Button 
-                          variant="link" 
-                          className="p-0 mt-3 text-saffron"
-                          onClick={() => window.open(article.externalLink, '_blank')}
-                        >
-                          Read More <ExternalLink className="h-3 w-3 ml-1" />
+                        <Button variant="link" className="p-0 mt-3 text-saffron" asChild>
+                          <a
+
+                            href={
+                              article.externalLink.startsWith("http")
+                                ? article.externalLink
+                                : `https://${article.externalLink}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Read More <ExternalLink className="h-3 w-3 ml-1" />
+                          </a>
                         </Button>
                       )}
+
                     </CardContent>
                   </Card>
                 ))
@@ -199,10 +206,17 @@ export function ResourceLibrary() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
               {videos.length > 0 ? (
                 videos.map((video) => (
-                  <Card 
-                    key={video.id} 
+                  <Card
+                    key={video.id}
                     className="overflow-hidden border-gold/20 hover:shadow-xl transition-all duration-300 group cursor-pointer"
-                    onClick={() => video.videoLink && window.open(video.videoLink, '_blank')}
+                    onClick={() => {
+                      if (video.videoLink) {
+                        const url = video.videoLink.startsWith("http")
+                          ? video.videoLink
+                          : `https://${video.videoLink}`;
+                        window.open(url, "_blank");
+                      }
+                    }}
                   >
                     <div className="relative h-48 overflow-hidden">
                       <img
@@ -237,7 +251,7 @@ export function ResourceLibrary() {
                 ))
               ) : (
                 <div className="col-span-full text-center py-10">
-                   <div className="bg-gray-50 inline-block p-4 rounded-full mb-3">
+                  <div className="bg-gray-50 inline-block p-4 rounded-full mb-3">
                     <Video className="h-6 w-6 text-gray-400 mx-auto" />
                   </div>
                   <p className="text-muted-foreground">No featured videos selected yet.</p>
