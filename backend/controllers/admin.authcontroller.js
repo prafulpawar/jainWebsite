@@ -332,7 +332,7 @@ export const getVideos = async (req, res) => {
 
 export const addVideo = async (req, res) => {
   try {
-    const { title, speaker, duration, views, videoLink } = req.body;
+    const { title, speaker, duration, videoLink } = req.body;
 
     let thumbnailPath = null;
     // We only process the image thumbnail here
@@ -344,7 +344,6 @@ export const addVideo = async (req, res) => {
       title,
       speaker,
       duration,
-      views, // Can be "12.5K" or whatever user types
       videoLink,
       thumbnail: thumbnailPath
     });
