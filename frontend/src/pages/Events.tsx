@@ -83,6 +83,9 @@ const EventsPage = () => {
 
   // *** NEW STATE: Track specifically selected date from calendar ***
   const [selectedDate, setSelectedDate] = useState(null);
+  
+  // *** NEW STATE: Track mobile calendar visibility ***
+  const [isMobileCalendarOpen, setIsMobileCalendarOpen] = useState(false);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -92,12 +95,9 @@ const EventsPage = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-
-    useEffect(() => {
-    // Only run this logic once data is loaded
+  useEffect(() => {
     if (!loading) {
       if (location.hash) {
-        // If there is a hash (e.g. /events#upcoming), scroll to that section
         const id = location.hash.replace("#", "");
         const element = document.getElementById(id);
         if (element) {
@@ -106,11 +106,10 @@ const EventsPage = () => {
           }, 100);
         }
       } else {
-        // FIX: If there is NO hash (e.g. clicked from Footer), scroll to Top
         window.scrollTo(0, 0);
       }
     }
-  }, [loading, location]); // 
+  }, [loading, location]);
 
   const getImageUrl = (path) => {
     if (!path) return null;
@@ -187,18 +186,6 @@ const EventsPage = () => {
     setCurrentPage(1);
   }, [selectedFilter, selectedDate]);
 
-  useEffect(() => {
-    if (!loading && location.hash) {
-      const id = location.hash.replace("#", "");
-      const element = document.getElementById(id);
-      if (element) {
-        setTimeout(() => {
-          element.scrollIntoView({ behavior: "smooth", block: "start" });
-        }, 100);
-      }
-    }
-  }, [loading, location]);
-
   const handlePrevMonth = () => setCurrentCalendarDate(subMonths(currentCalendarDate, 1));
   const handleNextMonth = () => setCurrentCalendarDate(addMonths(currentCalendarDate, 1));
 
@@ -238,6 +225,7 @@ const EventsPage = () => {
 
   const handleDateClick = (day) => {
     setSelectedDate(day);
+    setIsMobileCalendarOpen(false);
     document.getElementById('upcoming-list-top')?.scrollIntoView({ behavior: 'smooth' });
   };
 
@@ -289,9 +277,120 @@ const EventsPage = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isGalleryOpen, nextImage, prevImage]);
 
-  // *** UPDATE: Filter past events to only show those with photos ***
   const pastEventsWithPhotos = pastEvents.filter(
     (event) => event.galleryImages && event.galleryImages.length > 0
+  );
+
+  // --- HELPER 1: RENDER CALENDAR ---
+  const renderCalendar = () => (
+    <div id="calendar" className="scroll-mt-24 w-full">
+      <Card className="border-gold/20 shadow-lg">
+        <CardHeader className="border-b border-gold/20 bg-gradient-to-r from-saffron/10 to-gold/10 p-4">
+          <div className="flex items-center justify-between">
+            <span className="font-serif font-bold text-secondary text-sm sm:text-base">
+              {format(currentCalendarDate, "MMMM yyyy")}
+            </span>
+            <div className="flex gap-1">
+              <button onClick={handlePrevMonth} className="p-1 hover:bg-white rounded border border-transparent hover:border-gold/30 transition-colors">
+                <ChevronLeft className="h-4 w-4 text-secondary" />
+              </button>
+              <button onClick={handleNextMonth} className="p-1 hover:bg-white rounded border border-transparent hover:border-gold/30 transition-colors">
+                <ChevronRight className="h-4 w-4 text-secondary" />
+              </button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-2 sm:p-4">
+          <div className="grid grid-cols-7 gap-1 text-center text-[10px] sm:text-xs mb-2">
+            {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
+              <span key={i} className="font-semibold text-muted-foreground">{d}</span>
+            ))}
+          </div>
+          <div className="grid grid-cols-7 gap-1 text-center text-sm">
+            {calendarDays.map((day, i) => {
+              const dayEvents = getEventsForDate(day);
+              const hasEvent = dayEvents.length > 0;
+              const isCurrentMonth = isSameMonth(day, currentCalendarDate);
+              const isToday = isSameDay(day, new Date());
+              const isPastDay = isBefore(day, startOfDay(new Date()));
+              const isSelected = selectedDate && isSameDay(day, selectedDate);
+
+              return (
+                <div key={i} className="relative group aspect-square flex items-center justify-center">
+                  <button
+                    onClick={() => handleDateClick(day)}
+                    className={`
+                        w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs transition-all relative
+                        ${!isCurrentMonth ? "text-muted-foreground/30" : "text-foreground"}
+                        ${isSelected ? "ring-2 ring-secondary ring-offset-2 z-10" : ""}
+                        ${isToday && !isSelected ? "border border-saffron font-bold text-saffron" : ""}
+                        ${hasEvent
+                        ? isPastDay
+                          ? "bg-gray-400 text-white font-medium hover:bg-gray-500 shadow-sm"
+                          : "bg-saffron text-white font-bold hover:bg-saffron/90 shadow-sm"
+                        : "hover:bg-muted"
+                      }
+                      `}
+                  >
+                    {format(day, "d")}
+                  </button>
+                  {/* Tooltip for desktop only */}
+                  {hasEvent && (
+                    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 hidden md:group-hover:block w-max max-w-[150px]">
+                      <div className="bg-secondary text-secondary-foreground text-[10px] rounded p-2 shadow-lg border border-gold/20">
+                        {dayEvents.map((e, idx) => (
+                          <div key={idx} className="mb-1 last:mb-0 border-b border-white/10 last:border-0 pb-1 last:pb-0">
+                            <p className="font-bold truncate">{e.title}</p>
+                            <p className="opacity-80 text-[9px]">{e.time}</p>
+                          </div>
+                        ))}
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-secondary"></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  // --- HELPER 2: RENDER DARSHAN ---
+  const renderDarshanTimings = () => (
+    <Card className="border-gold/20 shadow-lg bg-gradient-to-br from-card to-saffron/5 h-fit w-full">
+      <CardHeader className="border-b border-gold/20 bg-gradient-to-r from-gold/20 to-saffron/20 py-3 px-4">
+        <CardTitle className="flex items-center gap-2 font-serif text-secondary text-base md:text-lg">
+          <Clock className="h-5 w-5 text-gold" />
+          Daily Darshan Timings
+        </CardTitle>
+      </CardHeader>
+      
+      <CardContent className="p-4 flex flex-col">
+        <div className="space-y-4">
+          {darshanTimings.length > 0 ? (
+            darshanTimings.map((timing, index) => (
+              <div key={index} className="border-b border-gold/10 pb-4 last:border-0 last:pb-0">
+                <h4 className="font-semibold text-secondary mb-2 text-sm md:text-base">{timing.dayRange}</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="bg-saffron/10 rounded-md p-2">
+                    <span className="text-muted-foreground block text-xs uppercase font-bold">Start</span>
+                    <span className="font-medium text-foreground"> {timing.startTime}</span>
+                  </div>
+                  <div className="bg-gold/10 rounded-md p-2">
+                    <span className="text-muted-foreground block text-xs uppercase font-bold">End</span>
+                    <span className="font-medium text-foreground"> {timing.endTime}</span>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+              <div className="text-center text-muted-foreground py-4">Timings not updated yet.</div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 
   return (
@@ -324,7 +423,8 @@ const EventsPage = () => {
                 <div className="flex flex-col gap-4 mb-6" id="upcoming-list-top">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="font-serif text-2xl font-bold text-secondary flex items-center gap-2 whitespace-nowrap">
-                      <Calendar className="h-6 w-6 text-saffron" />
+                      {/* --- MODIFIED LINE BELOW: Added hidden lg:block --- */}
+                      <Calendar className="hidden lg:block h-6 w-6 text-saffron" />
                       {selectedDate ? (
                         <span className="flex items-center gap-2">
                           Events for {format(selectedDate, "MMM d, yyyy")}
@@ -336,6 +436,15 @@ const EventsPage = () => {
                           </button>
                         </span>
                       ) : "Upcoming Events"}
+                      
+                      {/* --- MOBILE CALENDAR TOGGLE BUTTON (ONLY ONE) --- */}
+                      <button 
+                        onClick={() => setIsMobileCalendarOpen(true)}
+                        className="lg:hidden ml-2 p-2 bg-saffron/10 text-saffron rounded-full hover:bg-saffron/20 hover:scale-105 transition-all border border-saffron/20"
+                        aria-label="Open Calendar"
+                      >
+                        <Calendar className="h-5 w-5" />
+                      </button>
                     </h2>
 
                     {/* Scrollable Filters - Only show if NO date is selected */}
@@ -358,6 +467,12 @@ const EventsPage = () => {
                       </div>
                     )}
                   </div>
+                </div>
+
+                {/* --- MOBILE ONLY: DARSHAN TIMINGS SEPARATED FROM CALENDAR --- */}
+                {/* Placed immediately after the Upcoming Events Header, before the List */}
+                <div className="lg:hidden mb-8">
+                   {renderDarshanTimings()}
                 </div>
 
                 {loading ? (
@@ -458,128 +573,12 @@ const EventsPage = () => {
                 )}
               </div>
 
-              {/* Sidebar & Calendar */}
-              <div className="space-y-6 order-2">
-                <div id="calendar" className="scroll-mt-24">
-                  <Card className="border-gold/20 shadow-lg">
-                    <CardHeader className="border-b border-gold/20 bg-gradient-to-r from-saffron/10 to-gold/10 p-4">
-                      <div className="flex items-center justify-between">
-                        <span className="font-serif font-bold text-secondary text-sm sm:text-base">
-                          {format(currentCalendarDate, "MMMM yyyy")}
-                        </span>
-                        <div className="flex gap-1">
-                          <button onClick={handlePrevMonth} className="p-1 hover:bg-white rounded border border-transparent hover:border-gold/30 transition-colors">
-                            <ChevronLeft className="h-4 w-4 text-secondary" />
-                          </button>
-                          <button onClick={handleNextMonth} className="p-1 hover:bg-white rounded border border-transparent hover:border-gold/30 transition-colors">
-                            <ChevronRight className="h-4 w-4 text-secondary" />
-                          </button>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-2 sm:p-4">
-                      <div className="grid grid-cols-7 gap-1 text-center text-[10px] sm:text-xs mb-2">
-                        {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
-                          <span key={i} className="font-semibold text-muted-foreground">{d}</span>
-                        ))}
-                      </div>
-                      <div className="grid grid-cols-7 gap-1 text-center text-sm">
-                        {calendarDays.map((day, i) => {
-                          const dayEvents = getEventsForDate(day);
-                          const hasEvent = dayEvents.length > 0;
-                          const isCurrentMonth = isSameMonth(day, currentCalendarDate);
-                          const isToday = isSameDay(day, new Date());
-                          const isPastDay = isBefore(day, startOfDay(new Date()));
-                          // Check if this specific day is selected
-                          const isSelected = selectedDate && isSameDay(day, selectedDate);
-
-                          return (
-                            <div key={i} className="relative group aspect-square flex items-center justify-center">
-                              <button
-                                onClick={() => handleDateClick(day)}
-                                className={`
-                                  w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs transition-all relative
-                                  ${!isCurrentMonth ? "text-muted-foreground/30" : "text-foreground"}
-                                  
-                                  /* Selection styling */
-                                  ${isSelected
-                                    ? "ring-2 ring-secondary ring-offset-2 z-10"
-                                    : ""
-                                  }
-                                  
-                                  /* Today styling */
-                                  ${isToday && !isSelected ? "border border-saffron font-bold text-saffron" : ""}
-                                  
-                                  /* Event indicator styling */
-                                  ${hasEvent
-                                    ? isPastDay
-                                      ? "bg-gray-400 text-white font-medium hover:bg-gray-500 shadow-sm"
-                                      : "bg-saffron text-white font-bold hover:bg-saffron/90 shadow-sm"
-                                    : "hover:bg-muted"
-                                  }
-                                `}
-                              >
-                                {format(day, "d")}
-                              </button>
-
-                              {/* Hover Tooltip */}
-                              {hasEvent && (
-                                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 hidden md:group-hover:block w-max max-w-[150px]">
-                                  <div className="bg-secondary text-secondary-foreground text-[10px] rounded p-2 shadow-lg border border-gold/20">
-                                    {dayEvents.map((e, idx) => (
-                                      <div key={idx} className="mb-1 last:mb-0 border-b border-white/10 last:border-0 pb-1 last:pb-0">
-                                        <p className="font-bold truncate">{e.title}</p>
-                                        <p className="opacity-80 text-[9px]">{e.time}</p>
-                                      </div>
-                                    ))}
-                                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-secondary"></div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* --- NEW DAILY DARSHAN DESIGN --- */}
-                <Card className="border-gold/20 shadow-lg bg-gradient-to-br from-card to-saffron/5 h-fit">
-                  <CardHeader className="border-b border-gold/20 bg-gradient-to-r from-gold/20 to-saffron/20">
-                    <CardTitle className="flex items-center gap-2 font-serif text-secondary">
-                      <Clock className="h-5 w-5 text-gold" />
-                      Daily Darshan Timings
-                    </CardTitle>
-                  </CardHeader>
-                  
-                  <CardContent className="p-4 flex flex-col">
-                    <div className="space-y-4">
-                      {darshanTimings.length > 0 ? (
-                        darshanTimings.map((timing, index) => (
-                          <div key={index} className="border-b border-gold/10 pb-4 last:border-0 last:pb-0">
-                            <h4 className="font-semibold text-secondary mb-2">{timing.dayRange}</h4>
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div className="bg-saffron/10 rounded-md p-2">
-                                <span className="text-muted-foreground block text-xs uppercase font-bold">Start</span>
-                                <span className="font-medium text-foreground"> {timing.startTime}</span>
-                              </div>
-                              <div className="bg-gold/10 rounded-md p-2">
-                                <span className="text-muted-foreground block text-xs uppercase font-bold">End</span>
-                                <span className="font-medium text-foreground"> {timing.endTime}</span>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                         <div className="text-center text-muted-foreground py-4">Timings not updated yet.</div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-                 {/* --- END NEW DAILY DARSHAN DESIGN --- */}
-
+              {/* Sidebar & Calendar - DESKTOP ONLY */}
+              <div className="hidden lg:block space-y-6 order-2">
+                {renderCalendar()}
+                {renderDarshanTimings()}
               </div>
+
             </div>
           </div>
         </section>
@@ -707,6 +706,30 @@ const EventsPage = () => {
         )}
 
       </main>
+
+      {/* ---------------- MOBILE CALENDAR MODAL ---------------- */}
+      {isMobileCalendarOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center lg:hidden">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setIsMobileCalendarOpen(false)}
+          />
+          
+          {/* Modal Content - NOW ONLY SHOWS CALENDAR */}
+          <div className="relative w-[95%] max-w-sm max-h-[90vh] overflow-y-auto bg-background rounded-lg shadow-2xl p-4 animate-in zoom-in-95 duration-200">
+            <button 
+              onClick={() => setIsMobileCalendarOpen(false)}
+              className="absolute top-2 right-2 p-2 rounded-full hover:bg-muted text-muted-foreground z-10"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="mt-6">
+              {renderCalendar()}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ---------------- GALLERY MODAL ---------------- */}
       {isGalleryOpen && selectedEvent && (
