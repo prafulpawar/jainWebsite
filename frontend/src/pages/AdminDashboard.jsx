@@ -56,8 +56,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
 
   // --- TABS & VIEW STATES ---
-  // Added 'visitors' to activeTab logic
-  const [activeTab, setActiveTab] = useState('events'); // events | darshan | visitors | resources
+  const [activeTab, setActiveTab] = useState('events'); 
   const [eventView, setEventView] = useState('upcoming');
   const [resourceView, setResourceView] = useState('articles');
 
@@ -76,7 +75,7 @@ const AdminDashboard = () => {
   // --- DATA LISTS ---
   const [eventsList, setEventsList] = useState([]);
   const [darshanList, setDarshanList] = useState([]);
-  const [visitorList, setVisitorList] = useState([]); // NEW: Visitor List
+  const [visitorList, setVisitorList] = useState([]); 
   const [articlesList, setArticlesList] = useState([]);
   const [videosList, setVideosList] = useState([]);
 
@@ -86,7 +85,7 @@ const AdminDashboard = () => {
   // --- EDIT IDS ---
   const [editEventId, setEditEventId] = useState(null);
   const [editDarshanId, setEditDarshanId] = useState(null);
-  const [editVisitorId, setEditVisitorId] = useState(null); // NEW: Edit ID
+  const [editVisitorId, setEditVisitorId] = useState(null); 
 
   // --- TOAST & MODALS ---
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
@@ -105,7 +104,6 @@ const AdminDashboard = () => {
     dayRange: '', startTime: '', endTime: ''
   });
 
-  // NEW: Visitor Data State
   const [visitorData, setVisitorData] = useState({
     dayRange: '', startTime: '', endTime: ''
   });
@@ -117,6 +115,23 @@ const AdminDashboard = () => {
   const [videoData, setVideoData] = useState({
     title: '', speaker: '', duration: '', videoLink: ''
   });
+
+  // --- HELPER FUNCTION: Convert 24h to 12h AM/PM ---
+  // Ye function display ke liye use hoga
+  const formatTime = (timeString) => {
+    if (!timeString) return "";
+    // Agar time pehle se AM/PM mein hai (just in case), waisa hi return karein
+    if (timeString.toLowerCase().includes("am") || timeString.toLowerCase().includes("pm")) {
+      return timeString;
+    }
+    const [hours, minutes] = timeString.split(':');
+    const hour = parseInt(hours, 10);
+    if (isNaN(hour)) return timeString;
+    
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const formattedHour = hour % 12 || 12;
+    return `${formattedHour}:${minutes} ${ampm}`;
+  };
 
   // --- DERIVED LOGIC FOR PAST EVENTS ---
   const showUploadSection = (() => {
@@ -144,7 +159,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchEvents();
     fetchDarshan();
-    fetchVisitors(); // NEW
+    fetchVisitors();
     fetchEventTypes();
     fetchArticles();
     fetchVideos();
@@ -156,7 +171,6 @@ const AdminDashboard = () => {
     setSelectedFiles([]);
   }, [searchQuery, filterDate, activeTab, resourceView]);
 
-  // --- TOAST HELPER ---
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
     setTimeout(() => setToast((prev) => ({ ...prev, show: false })), 3000);
@@ -171,7 +185,6 @@ const AdminDashboard = () => {
     try { const res = await api.get('/darshan'); setDarshanList(res.data); }
     catch (err) { console.error("Failed to fetch darshan", err); }
   };
-  // NEW: Fetch Visitors
   const fetchVisitors = async () => {
     try { const res = await api.get('/visitors'); setVisitorList(res.data); }
     catch (err) { console.error("Failed to fetch visitors", err); }
@@ -199,14 +212,13 @@ const AdminDashboard = () => {
     navigate('/admin/login');
   };
 
-  // --- FILE HANDLING ---
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
       setSelectedFiles(Array.from(e.target.files));
     }
   };
 
-  // ... (Event Logic remains the same) ...
+  // ... (Event Logic) ...
   const handleViewSwitchRequest = (targetView) => {
     if (eventView === targetView) return;
     if (editEventId) setWarningModal({ isOpen: true, targetView });
@@ -326,7 +338,7 @@ const AdminDashboard = () => {
   };
 
 
-  // ... (Resources Logic remains the same) ...
+  // ... (Resources Logic) ...
   const handleArticleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -408,7 +420,7 @@ const AdminDashboard = () => {
         if (editDarshanId === deleteModal.id) resetDarshanForm();
         fetchDarshan();
         showToast("Schedule deleted.");
-      } else if (deleteModal.type === 'visitor') { // NEW
+      } else if (deleteModal.type === 'visitor') { 
         await api.delete(`/delete-visitor/${deleteModal.id}`);
         if (editVisitorId === deleteModal.id) resetVisitorForm();
         fetchVisitors();
@@ -427,7 +439,7 @@ const AdminDashboard = () => {
     finally { setLoading(false); }
   };
 
-  // ... (Pagination Logic remains the same) ...
+  // ... (Pagination Logic) ...
   const upcomingDates = eventsList.filter(ev => ev.fullDate && !isPast(parseISO(ev.fullDate))).map(ev => parseISO(ev.fullDate));
   const pastDates = eventsList.filter(ev => ev.fullDate && isPast(parseISO(ev.fullDate))).map(ev => parseISO(ev.fullDate));
   const activeEventsList = eventView === 'upcoming'
@@ -520,8 +532,6 @@ const AdminDashboard = () => {
 
         {/* --- EVENTS TAB --- */}
         {activeTab === 'events' && (
-          // ... (Existing Events UI code) ...
-          // Note: Keeping it brief for readability, paste your existing events code here
             <div className="grid lg:grid-cols-3 gap-8 ">
             <Card className="border-gold/20 shadow-lg lg:col-span-1 h-fit sticky top-24">
               <CardHeader className="border-b border-gold/20 bg-secondary/5 flex flex-row items-center justify-between">
@@ -805,6 +815,7 @@ const AdminDashboard = () => {
                           <Clock className="w-4 h-4 text-saffron" />
                           <div className="flex flex-col">
                             <span className="text-[10px] font-bold text-muted-foreground uppercase">Opening Hours</span>
+                             {/* Darshan time format applied here if needed, but your request was specific to visitors */}
                             <span className="font-medium text-foreground text-base">{timing.startTime} - {timing.endTime}</span>
                           </div>
                         </div>
@@ -868,7 +879,10 @@ const AdminDashboard = () => {
                           <Clock className="w-4 h-4 text-blue-500" />
                           <div className="flex flex-col">
                             <span className="text-[10px] font-bold text-muted-foreground uppercase">Visiting Hours</span>
-                            <span className="font-medium text-foreground text-base">{timing.startTime} - {timing.endTime}</span>
+                            {/* HERE WE APPLY formatTime() */}
+                            <span className="font-medium text-foreground text-base">
+                              {formatTime(timing.startTime)} - {formatTime(timing.endTime)}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -883,8 +897,6 @@ const AdminDashboard = () => {
 
         {/* --- RESOURCES TAB --- */}
         {activeTab === 'resources' && (
-          // ... (Existing Resources UI code) ...
-          // Keeping it brief, paste your resources code here
           <div className="grid lg:grid-cols-3 gap-8">
 
             {/* TOGGLE & FORM CARD */}
@@ -1067,7 +1079,6 @@ const AdminDashboard = () => {
                             <div className="flex justify-between items-start">
                               <h4 className="font-semibold text-foreground text-lg leading-tight flex items-center gap-2">
                                 {video.title}
-                                {/* REMOVED THE FEATURED TEXT BADGE HERE */}
                               </h4>
                               <div className="flex gap-1">
                                 <Button
@@ -1122,7 +1133,6 @@ const AdminDashboard = () => {
   );
 };
 // ... (Sub components like ToastPopup, UnsavedChangesModal, etc. remain here) ...
-// (These were correct in your provided code, just ensure they are included at the bottom of the file)
 const ToastPopup = ({ show, message, type, onClose }) => {
   if (!show) return null;
   const isSuccess = type === 'success';

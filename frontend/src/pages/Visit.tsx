@@ -28,9 +28,8 @@ import api from "@/utils/api";
 
 const Visit = () => {
   const { hash } = useLocation();
-  const [templeHours, setTempleHours] = useState([]);
- const [darshanHours, setDarshanHours] = useState([]);
   const [visitorHours, setVisitorHours] = useState([]); // NEW
+
   // Handle Scroll to Section on load
   useEffect(() => {
     if (hash) {
@@ -45,23 +44,40 @@ const Visit = () => {
     }
   }, [hash]);
 
-  // Fetch Temple Hours (Darshan)
+  // Fetch Temple Hours (Darshan/Visitors)
    useEffect(() => {
     const fetchHours = async () => {
       try {
-        const darshanRes = await api.get("/darshan");
-        setDarshanHours(darshanRes.data);
-
         // Fetch Visitors
         const visitorRes = await api.get("/visitors");
         setVisitorHours(visitorRes.data);
-
       } catch (error) {
         console.error("Error fetching hours:", error);
       }
     };
     fetchHours();
   }, []);
+
+  // --- HELPER FUNCTION: Convert 24h to 12h AM/PM ---
+  const formatTime = (timeString) => {
+    if (!timeString) return "";
+    
+    // Check if it already has AM/PM
+    if (timeString.toLowerCase().includes("am") || timeString.toLowerCase().includes("pm")) {
+      return timeString;
+    }
+
+    // Split assuming HH:mm format
+    const [hours, minutes] = timeString.split(':');
+    const hour = parseInt(hours, 10);
+    
+    if (isNaN(hour)) return timeString; // Safety check
+
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const formattedHour = hour % 12 || 12; // 0 becomes 12, 13 becomes 1
+    
+    return `${formattedHour}:${minutes} ${ampm}`;
+  };
 
   const guidelines = [
     {
@@ -167,13 +183,16 @@ const Visit = () => {
                   </div>
                   <div>
                     <h3 className="font-bold text-lg text-secondary">Opening Hours</h3>
-                    {templeHours.length > 0 ? (
-                      templeHours.map((hour, index) => (
+                    {visitorHours.length > 0 ? (
+                      visitorHours.map((hour, index) => (
                         <div key={index} className={index > 0 ? "mt-2" : ""}>
                           <p className="text-muted-foreground">{hour.dayRange}</p>
+                          
+                          {/* UPDATED: Applied formatTime function here */}
                           <p className="text-xl font-medium text-gold">
-                            {hour.startTime} – {hour.endTime}
+                            {formatTime(hour.startTime)} – {formatTime(hour.endTime)}
                           </p>
+
                         </div>
                       ))
                     ) : (
