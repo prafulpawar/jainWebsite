@@ -47,12 +47,12 @@ export function Header() {
     setMobileSubmenuOpen(mobileSubmenuOpen === name ? null : name);
   };
 
-  // Mock Panchang data logic
   const formatTime = (date: Date) =>
     date.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
+      timeZone: "America/Toronto", 
     });
 
   const addMinutes = (date: Date, minutes: number) =>
@@ -83,14 +83,12 @@ export function Header() {
     const sunrise = sunTimes.sunrise;
     const sunset = sunTimes.sunset;
 
-    // Jain logic (commonly used):
-    // Navkarsi = Sunrise + 48 minutes
-    // Chovihar = Sunset - 48 minutes
-    const navkarsi = addMinutes(sunrise, 48);
-    const chovihar = addMinutes(sunset, -48);
 
-    return {
-      tithi: tithis[tithiIndex],
+     const navkarsi = addMinutes(sunrise, 48);
+     const chovihar = sunset; 
+
+      return {
+      tithi: tithis[tithiIndex], // Note: Yeh mock tithi hai, real nahi
       moonPhase: moonPhases[moonIndex],
       sunrise: formatTime(sunrise),
       sunset: formatTime(sunset),
