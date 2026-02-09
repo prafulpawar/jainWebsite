@@ -342,7 +342,6 @@ export const addVideo = async (req, res) => {
     const newVideo = await Video.create({
       title,
       speaker,
-      // duration,
       videoLink,
       thumbnail: thumbnailPath
     });
