@@ -23,7 +23,11 @@ import {
     addVideo,
     deleteVideo,
     toggleArticleFeature,
-    toggleVideoFeature
+    toggleVideoFeature,
+     getVisitorTimings,
+    addVisitorTiming,
+    updateVisitorTiming,
+    deleteVisitorTiming
 } from '../controllers/admin.authcontroller.js';
 import { verifyToken } from '../middlewares/authMiddleware.js';
 
@@ -92,4 +96,9 @@ router.post('/add-video', verifyToken, upload.single('thumbnail'), addVideo);
 router.delete('/delete-video/:id', verifyToken, deleteVideo);
 router.put('/toggle-featured-video/:id', verifyToken, toggleVideoFeature);
 
+// --- VISITOR ROUTES ---
+router.get('/visitors', getVisitorTimings);
+router.post('/add-visitor', verifyToken, addVisitorTiming);
+router.put('/update-visitor/:id', verifyToken, updateVisitorTiming);
+router.delete('/delete-visitor/:id', verifyToken, deleteVisitorTiming);
 export default router;
