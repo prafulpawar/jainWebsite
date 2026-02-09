@@ -389,7 +389,7 @@ export const deleteVideo = async (req, res) => {
 
 export const getVisitorTimings = async (req, res) => {
   try {
-    const timings = await VisitorTiming.findAll();
+    const timings = await Visitor.findAll();
     res.json(timings);
   } catch (error) {
     res.status(500).json({ error: error.message });
