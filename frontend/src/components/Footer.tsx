@@ -58,7 +58,7 @@ export function Footer() {
 
             <div className="flex gap-3">
               <a 
-                href="https://facebook.com" 
+                href="https://www.facebook.com/jsotcanada/" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="w-10 h-10 rounded-full bg-card/10 hover:bg-gold/20 flex items-center justify-center transition-colors" 
@@ -67,7 +67,7 @@ export function Footer() {
                 <Facebook className="h-5 w-5" />
               </a>
               <a 
-                href="https://instagram.com" 
+                href="https://www.instagram.com/jainsocietyoftoronto/?hl=en" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="w-10 h-10 rounded-full bg-card/10 hover:bg-gold/20 flex items-center justify-center transition-colors" 
