@@ -5,7 +5,6 @@ import DarshanModel from './darshan.model.js';
 import EventModel from './event.model.js';
 import EventTypeModel from './eventtype.model.js';
 import {ArticleModel, VideoModel } from './resources.model.js';
-import VisitorTiming from './visitorTiming.model.js'; 
 
 const Admin = AdminModel(sequelize);
 const Darshan = DarshanModel(sequelize);
@@ -13,7 +12,6 @@ const Event = EventModel(sequelize);
 const EventType = EventTypeModel(sequelize,);
 const Article = ArticleModel(sequelize);
 const Video = VideoModel(sequelize);
-const Visitor  = VisitorTiming(sequelize)
 
 
 await sequelize.sync({ alter: true });
@@ -26,5 +24,4 @@ export {
   EventType,
   Article,
   Video ,
-  Visitor
 };

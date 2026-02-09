@@ -1,4 +1,4 @@
-import { Admin, Event, Darshan ,EventType , Article, Video,Visitor  } from '../models/index.js';
+import { Admin, Event, Darshan ,EventType , Article, Video  } from '../models/index.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -192,8 +192,6 @@ export const deleteDarshanTiming = async (req, res) => {
 };
 
 
-
-
 export const updateDarshanTiming = async (req, res) => {
   try {
     const { id } = req.params;
@@ -382,49 +380,6 @@ export const deleteVideo = async (req, res) => {
     const { id } = req.params;
     await Video.destroy({ where: { id } });
     res.json({ message: 'Video deleted' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const getVisitorTimings = async (req, res) => {
-  try {
-    const timings = await Visitor.findAll();
-    res.json(timings);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const addVisitorTiming = async (req, res) => {
-  try {
-    const timing = await Visitor.create(req.body);
-    res.status(201).json({ message: 'Visitor timing added', timing });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const updateVisitorTiming = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const [updated] = await Visitor.update(req.body, { where: { id } });
-    if (updated) {
-      const updatedTiming = await VisitorTiming.findByPk(id);
-      res.status(200).json({ message: 'Visitor timing updated', timing: updatedTiming });
-    } else {
-      res.status(404).json({ message: 'Timing not found' });
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const deleteVisitorTiming = async (req, res) => {
-  try {
-    const { id } = req.params;
-    await Visitor.destroy({ where: { id } });
-    res.status(200).json({ message: 'Visitor timing deleted' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
