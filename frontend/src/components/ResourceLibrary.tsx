@@ -72,6 +72,7 @@ export function ResourceLibrary() {
         setArticles(featuredArticles);
         setVideos(featuredVideos);
       } catch (err) {
+        console.log(err)
         console.error("Error fetching resources:", err);
         setError("Failed to load resources. Please try again later.");
       } finally {
@@ -230,9 +231,9 @@ export function ResourceLibrary() {
                           <Play className="h-8 w-8 text-primary-foreground ml-1" />
                         </div>
                       </div>
-                      <span className="absolute bottom-2 right-2 bg-secondary/80 text-secondary-foreground text-xs px-2 py-1 rounded">
+                      {/* <span className="absolute bottom-2 right-2 bg-secondary/80 text-secondary-foreground text-xs px-2 py-1 rounded">
                         {video.duration}
-                      </span>
+                      </span> */}
                       {/* Featured Badge */}
                       <span className="absolute top-2 right-2 bg-yellow-500 text-black text-[10px] font-bold px-2 py-1 rounded shadow-sm">
                         FEATURED

@@ -111,7 +111,7 @@ const AdminDashboard = () => {
   });
 
   const [videoData, setVideoData] = useState({
-    title: '', speaker: '', duration: '', videoLink: ''
+    title: '', speaker: '', videoLink: ''
   });
 
   // --- HELPER FUNCTION: Convert 24h to 12h AM/PM ---
@@ -352,7 +352,7 @@ const AdminDashboard = () => {
 
       await api.post('/add-video', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       showToast("Video resource added!");
-      setVideoData({ title: '', speaker: '', duration: '', videoLink: '' });
+      setVideoData({ title: '', speaker: '', videoLink: '' });
       setSelectedFiles([]);
       fetchVideos();
     } catch (err) { console.error(err); showToast("Failed to add video", "error"); }
@@ -971,9 +971,9 @@ const AdminDashboard = () => {
                             <div className="absolute inset-0 flex items-center justify-center">
                               <PlayCircle className="w-8 h-8 text-white opacity-80" />
                             </div>
-                            <div className="absolute bottom-1 right-1 bg-black/70 text-white text-[10px] px-1 rounded">
+                            {/* <div className="absolute bottom-1 right-1 bg-black/70 text-white text-[10px] px-1 rounded">
                               {video.duration || "00:00"}
-                            </div>
+                            </div> */}
                           </div>
                           <div className="flex-grow">
                             <div className="flex justify-between items-start">
