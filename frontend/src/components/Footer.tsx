@@ -10,11 +10,11 @@ const quickLinks = [
   
   { name: "Home", href: "/" },
   { name: "About Us", href: "/about" },
-  { name: "Events", href: "/events#calendar" },
+  { name: "Events", href: "/events" },
   // { name: "Temple Services", href: "/services" },
   { name: "Resources ", href: "/resources" },
-  { name: "Community", href: "/events#groups" },
-   { name: "Visitors", href: "/Visitor" },
+  // { name: "Community", href: "/about#board" },
+   { name: "Visitors", href: "/visitor" },
 ];
 
 
@@ -76,7 +76,7 @@ export function Footer() {
                 <Instagram className="h-5 w-5" />
               </a>
               <a 
-                href="https://youtube.com" 
+                href="https://www.youtube.com/@jainsocietyoftoronto-media131" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="w-10 h-10 rounded-full bg-card/10 hover:bg-gold/20 flex items-center justify-center transition-colors" 

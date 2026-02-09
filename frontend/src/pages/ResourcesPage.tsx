@@ -11,7 +11,8 @@ import exteriorImg2 from "@/assets/EXTERIOR-VIEW-CAM-02-300x106.jpg";
 const ResourcesPage = () => {
   const location = useLocation();
 
-  useEffect(() => {
+   useEffect(() => {
+    // 1. Check if there is a hash (e.g. /resources#441-ellesmere)
     if (location.hash) {
       const id = location.hash.replace("#", "");
       const element = document.getElementById(id);
@@ -20,6 +21,9 @@ const ResourcesPage = () => {
           element.scrollIntoView({ behavior: "smooth", block: "start" });
         }, 100);
       }
+    } else {
+      // 2. If NO hash (e.g. clicked "Resources" from Footer), scroll to Top
+      window.scrollTo(0, 0);
     }
   }, [location]);
 

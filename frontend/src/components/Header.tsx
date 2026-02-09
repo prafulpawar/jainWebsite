@@ -2,13 +2,14 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Facebook, Instagram, Youtube, Sun, Moon, Calendar, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils"; 
-import logoJain from "@/assets/logoJain.jpg"; 
+import { cn } from "@/lib/utils";
+import logoJain from "@/assets/logoJain.jpg";
+import SunCalc from "suncalc";
 
 const navItems = [
   { name: "Home", href: "/" },
-  { 
-    name: "About", 
+  {
+    name: "About",
     href: "/about",
     submenu: [
       { name: "About Jainism", href: "/about#jainism" },
@@ -17,8 +18,8 @@ const navItems = [
       { name: "Management Committee", href: "/about#management" },
     ]
   },
-  { 
-    name: "Events", 
+  {
+    name: "Events",
     href: "/events",
     // Added Submenu for Events here
     submenu: [
@@ -37,7 +38,7 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // State to track which mobile submenu is open
   const [mobileSubmenuOpen, setMobileSubmenuOpen] = useState<string | null>(null);
-  
+
   const location = useLocation();
 
   const isExternalLink = (href: string) => href.startsWith("#");
@@ -47,8 +48,20 @@ export function Header() {
   };
 
   // Mock Panchang data logic
+  const formatTime = (date: Date) =>
+    date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+
+  const addMinutes = (date: Date, minutes: number) =>
+    new Date(date.getTime() + minutes * 60000);
+
+
   const getPanchangData = () => {
     const today = new Date();
+
     const moonPhases = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"];
     const tithis = [
       "Pratipada", "Dwitiya", "Tritiya", "Chaturthi", "Panchami",
@@ -60,13 +73,29 @@ export function Header() {
     const tithiIndex = (dayOfMonth - 1) % 16;
     const moonIndex = Math.floor((dayOfMonth / 30) * 8) % 8;
 
+    // 🌞 Sun times for Toronto
+    const sunTimes = SunCalc.getTimes(
+      today,
+      43.6532,
+      -79.3832
+    );
+
+    const sunrise = sunTimes.sunrise;
+    const sunset = sunTimes.sunset;
+
+    // Jain logic (commonly used):
+    // Navkarsi = Sunrise + 48 minutes
+    // Chovihar = Sunset - 48 minutes
+    const navkarsi = addMinutes(sunrise, 48);
+    const chovihar = addMinutes(sunset, -48);
+
     return {
       tithi: tithis[tithiIndex],
       moonPhase: moonPhases[moonIndex],
-      sunrise: "6:45 AM",
-      sunset: "5:32 PM",
-      navkarsi: "7:33 AM",
-      chovihar: "4:44 PM",
+      sunrise: formatTime(sunrise),
+      sunset: formatTime(sunset),
+      navkarsi: formatTime(navkarsi),
+      chovihar: formatTime(chovihar),
     };
   };
 
@@ -74,28 +103,28 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm shadow-md border-b-2 border-gold/30">
-      
+
       {/* Top Bar with Panchang Data */}
       <div className="bg-secondary text-secondary-foreground py-2 px-4">
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center text-sm gap-2 md:gap-0">
-          
+
           <div className="flex flex-wrap justify-center md:justify-start items-center gap-3 md:gap-4 text-xs md:text-sm">
             <div className="flex items-center gap-2">
               <Calendar className="w-3 h-3 md:w-4 md:h-4 text-gold" />
               <span className="opacity-80 hidden sm:inline">Tithi:</span>
               <span className="font-semibold text-gold-light">{panchang.tithi}</span>
             </div>
-            
+
             <span className="hidden sm:inline opacity-30">|</span>
-            
+
             <div className="flex items-center gap-2">
               <Sun className="w-3 h-3 md:w-4 md:h-4 text-gold" />
               <span className="opacity-80 hidden sm:inline">Navkarsi:</span>
               <span className="font-semibold text-gold-light">{panchang.navkarsi}</span>
             </div>
-            
+
             <span className="hidden sm:inline opacity-30">|</span>
-            
+
             <div className="flex items-center gap-2">
               <Moon className="w-3 h-3 md:w-4 md:h-4 text-gold" />
               <span className="opacity-80 hidden sm:inline">Chovihar:</span>
@@ -106,16 +135,37 @@ export function Header() {
           <div className="flex items-center gap-3">
             <span className="hidden lg:inline text-gold-light font-medium text-xs">॥ Jai Jinendra ॥</span>
             <div className="flex gap-2">
-              <a href="#" aria-label="Facebook" className="hover:text-gold transition-colors">
+              <a
+                href="https://www.facebook.com/jsotcanada/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+                className="hover:text-gold transition-colors"
+              >
                 <Facebook className="h-4 w-4" />
               </a>
-              <a href="#" aria-label="Instagram" className="hover:text-gold transition-colors">
+
+              <a
+                href="https://www.instagram.com/jainsocietyoftoronto/?hl=en"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                className="hover:text-gold transition-colors"
+              >
                 <Instagram className="h-4 w-4" />
               </a>
-              <a href="#" aria-label="YouTube" className="hover:text-gold transition-colors">
+
+              <a
+                href="https://www.youtube.com/@jainsocietyoftoronto-media131"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube"
+                className="hover:text-gold transition-colors"
+              >
                 <Youtube className="h-4 w-4" />
               </a>
             </div>
+
           </div>
         </div>
       </div>
@@ -126,11 +176,11 @@ export function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-saffron to-gold flex items-center justify-center shadow-lg">
-             <img 
-              src={logoJain} 
-              alt="JSOT Logo" 
-              className="w-12 h-12 rounded-full object-cover shadow-lg border border-gold/20" 
-            />
+              <img
+                src={logoJain}
+                alt="JSOT Logo"
+                className="w-12 h-12 rounded-full object-cover shadow-lg border border-gold/20"
+              />
             </div>
             <div className="flex flex-col">
               <span className="font-serif text-xl font-bold text-secondary">JSOT</span>
@@ -145,13 +195,13 @@ export function Header() {
               if (item.submenu) {
                 return (
                   <div key={item.name} className="relative group px-3 py-2">
-                    <button 
+                    <button
                       className="flex items-center gap-1 text-foreground hover:text-primary font-medium transition-colors focus:outline-none"
                     >
                       {item.name}
                       <ChevronDown className="w-4 h-4 transition-transform group-hover:rotate-180" />
                     </button>
-                    
+
                     {/* Dropdown Menu */}
                     <div className="absolute left-0 top-full pt-2 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 z-50">
                       <div className="bg-card border border-gold/20 rounded-lg shadow-xl overflow-hidden">
@@ -214,11 +264,11 @@ export function Header() {
                       className="flex items-center justify-between w-full py-2 text-foreground hover:text-primary font-medium"
                     >
                       {item.name}
-                      <ChevronDown 
-                        className={`w-4 h-4 transition-transform ${mobileSubmenuOpen === item.name ? "rotate-180" : ""}`} 
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform ${mobileSubmenuOpen === item.name ? "rotate-180" : ""}`}
                       />
                     </button>
-                    
+
                     {mobileSubmenuOpen === item.name && (
                       <div className="pl-4 space-y-1 border-l-2 border-gold/20 ml-2 mb-2">
                         {item.submenu.map((subItem) => (

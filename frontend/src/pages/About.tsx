@@ -58,7 +58,7 @@ const About = () => {
       <Header />
 
       {/* Hero Banner */}
-      <section className="relative h-[40vh] min-h-[300px] flex items-center justify-center overflow-hidden bg-secondary">
+      <section className="relative h-[10vh] min-h-[280px] flex items-center justify-center overflow-hidden bg-secondary">
         <div className="absolute inset-0 bg-gradient-to-b from-secondary/50 to-secondary z-10" />
         {/* Background image */}
         <div className="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1604868189265-219fa7f13677?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center" />

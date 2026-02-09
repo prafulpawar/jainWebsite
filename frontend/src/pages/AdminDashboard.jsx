@@ -75,7 +75,7 @@ const AdminDashboard = () => {
   // --- DATA LISTS ---
   const [eventsList, setEventsList] = useState([]);
   const [darshanList, setDarshanList] = useState([]);
-  const [visitorList, setVisitorList] = useState([]); 
+  // Visitor list state removed
   const [articlesList, setArticlesList] = useState([]);
   const [videosList, setVideosList] = useState([]);
 
@@ -85,7 +85,7 @@ const AdminDashboard = () => {
   // --- EDIT IDS ---
   const [editEventId, setEditEventId] = useState(null);
   const [editDarshanId, setEditDarshanId] = useState(null);
-  const [editVisitorId, setEditVisitorId] = useState(null); 
+  // Edit Visitor ID state removed
 
   // --- TOAST & MODALS ---
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
@@ -104,9 +104,7 @@ const AdminDashboard = () => {
     dayRange: '', startTime: '', endTime: ''
   });
 
-  const [visitorData, setVisitorData] = useState({
-    dayRange: '', startTime: '', endTime: ''
-  });
+  // Visitor Data state removed
 
   const [articleData, setArticleData] = useState({
     title: '', author: '', date: '', excerpt: '', externalLink: ''
@@ -117,10 +115,8 @@ const AdminDashboard = () => {
   });
 
   // --- HELPER FUNCTION: Convert 24h to 12h AM/PM ---
-  // Ye function display ke liye use hoga
   const formatTime = (timeString) => {
     if (!timeString) return "";
-    // Agar time pehle se AM/PM mein hai (just in case), waisa hi return karein
     if (timeString.toLowerCase().includes("am") || timeString.toLowerCase().includes("pm")) {
       return timeString;
     }
@@ -159,7 +155,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchEvents();
     fetchDarshan();
-    fetchVisitors();
+    // fetchVisitors removed
     fetchEventTypes();
     fetchArticles();
     fetchVideos();
@@ -185,10 +181,7 @@ const AdminDashboard = () => {
     try { const res = await api.get('/darshan'); setDarshanList(res.data); }
     catch (err) { console.error("Failed to fetch darshan", err); }
   };
-  const fetchVisitors = async () => {
-    try { const res = await api.get('/visitors'); setVisitorList(res.data); }
-    catch (err) { console.error("Failed to fetch visitors", err); }
-  };
+  // fetchVisitors removed
   const fetchEventTypes = async () => {
     try {
       const res = await api.get('/event-types');
@@ -322,21 +315,7 @@ const AdminDashboard = () => {
     finally { setLoading(false); }
   };
 
-  // --- NEW: VISITOR LOGIC ---
-  const resetVisitorForm = () => { setVisitorData({ dayRange: '', startTime: '', endTime: '' }); setEditVisitorId(null); };
-  const handleEditVisitor = (timing) => { setVisitorData({ dayRange: timing.dayRange, startTime: timing.startTime, endTime: timing.endTime }); setEditVisitorId(timing.id); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-  const handleVisitorSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      if (editVisitorId) { await api.put(`/update-visitor/${editVisitorId}`, visitorData); showToast("Visitor schedule updated!"); }
-      else { await api.post('/add-visitor', visitorData); showToast("New visitor schedule added!"); }
-      resetVisitorForm();
-      fetchVisitors();
-    } catch (err) { console.error(err); showToast("Error saving timing", "error"); }
-    finally { setLoading(false); }
-  };
-
+  // Visitor Logic functions removed (resetVisitorForm, handleEditVisitor, handleVisitorSubmit)
 
   // ... (Resources Logic) ...
   const handleArticleSubmit = async (e) => {
@@ -420,12 +399,9 @@ const AdminDashboard = () => {
         if (editDarshanId === deleteModal.id) resetDarshanForm();
         fetchDarshan();
         showToast("Schedule deleted.");
-      } else if (deleteModal.type === 'visitor') { 
-        await api.delete(`/delete-visitor/${deleteModal.id}`);
-        if (editVisitorId === deleteModal.id) resetVisitorForm();
-        fetchVisitors();
-        showToast("Visitor schedule deleted.");
-      } else if (deleteModal.type === 'article') {
+      } 
+      // Visitor delete logic removed
+      else if (deleteModal.type === 'article') {
         await api.delete(`/delete-article/${deleteModal.id}`);
         fetchArticles();
         showToast("Article deleted.");
@@ -513,14 +489,7 @@ const AdminDashboard = () => {
           >
             <Clock className="w-4 h-4 mr-2" /> Darshan<span className="hidden md:inline"> Timings</span>
           </Button>
-          {/* NEW VISITORS TAB */}
-          <Button
-            variant={activeTab === 'visitors' ? "default" : "ghost"}
-            onClick={() => setActiveTab('visitors')}
-            className={activeTab === 'visitors' ? "bg-saffron text-secondary font-bold hover:bg-saffron/90" : "text-gray-500"}
-          >
-            <Users className="w-4 h-4 mr-2" /> Visitor<span className="hidden md:inline"> Hours</span>
-          </Button>
+          {/* Visitor Tab Button Removed */}
           <Button
             variant={activeTab === 'resources' ? "default" : "ghost"}
             onClick={() => setActiveTab('resources')}
@@ -829,71 +798,7 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* --- NEW: VISITORS TAB --- */}
-        {activeTab === 'visitors' && (
-          <div className="grid lg:grid-cols-3 gap-8">
-            <Card className="border-gold/20 shadow-lg h-fit">
-              <CardHeader className="border-b border-gold/20 bg-secondary/5 flex flex-row items-center justify-between">
-                <CardTitle className="text-secondary font-serif">{editVisitorId ? "Edit Visitor Time" : "Add Visitor Time"}</CardTitle>
-                {editVisitorId && (
-                  <Button variant="ghost" size="sm" onClick={resetVisitorForm} className="h-8 text-xs text-muted-foreground"><X className="h-3 w-3 mr-1" /> Cancel</Button>
-                )}
-              </CardHeader>
-              <CardContent className="pt-6">
-                <form onSubmit={handleVisitorSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-gray-500 uppercase">Day Range</label>
-                    <Input placeholder="e.g. Sat - Sun" value={visitorData.dayRange} onChange={e => setVisitorData({ ...visitorData, dayRange: e.target.value })} required />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-gray-500 uppercase">Start Time</label>
-                    <Input type="time" placeholder="e.g. 10:00 AM" value={visitorData.startTime} onChange={e => setVisitorData({ ...visitorData, startTime: e.target.value })} required />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-gray-500 uppercase">End Time</label>
-                    <Input type="time" placeholder="e.g. 05:00 PM" value={visitorData.endTime} onChange={e => setVisitorData({ ...visitorData, endTime: e.target.value })} required />
-                  </div>
-                  <Button type="submit" className={cn("w-full text-black", editVisitorId ? "bg-blue-600 hover:bg-blue-700" : "")} disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin mr-2" /> : (editVisitorId ? "Update Visitor Timing" : "Save Visitor Timing")}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-            <Card className="border-gold/20 shadow-lg lg:col-span-2 bg-gradient-to-br from-card to-blue-50/20">
-              <CardHeader className="border-b border-gold/20 bg-gradient-to-r from-blue-100/50 to-indigo-100/50">
-                <CardTitle className="flex items-center gap-2 font-serif text-secondary"><Users className="h-5 w-5 text-blue-600" /> Visitor / Office Hours</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {visitorList.map((timing, index) => (
-                    <div key={index} className={cn("border-b border-blue-100 pb-4 last:border-0 bg-white/60 p-4 rounded-lg", editVisitorId === timing.id && "ring-2 ring-blue-400 bg-blue-50")}>
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-semibold text-secondary text-lg">{timing.dayRange}</h4>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" className="text-blue-500 hover:bg-blue-50" onClick={() => handleEditVisitor(timing)}><Pencil className="h-4 w-4" /></Button>
-                          <Button variant="ghost" size="icon" className="text-red-500 hover:bg-red-50" onClick={() => initiateDelete('visitor', timing.id)}><Trash2 className="h-4 w-4" /></Button>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm mt-2">
-                        <div className="bg-white/80 rounded-md px-4 py-2 border border-blue-100 flex items-center gap-3 w-full shadow-sm">
-                          <Clock className="w-4 h-4 text-blue-500" />
-                          <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase">Visiting Hours</span>
-                            {/* HERE WE APPLY formatTime() */}
-                            <span className="font-medium text-foreground text-base">
-                              {formatTime(timing.startTime)} - {formatTime(timing.endTime)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {visitorList.length === 0 && <p className="text-center text-gray-500">No visitor timings configured.</p>}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+        {/* Visitor Tab Content Removed */}
 
         {/* --- RESOURCES TAB --- */}
         {activeTab === 'resources' && (

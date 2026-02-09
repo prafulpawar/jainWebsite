@@ -49,7 +49,7 @@ const Visit = () => {
     const fetchHours = async () => {
       try {
         // Fetch Visitors
-        const visitorRes = await api.get("/visitors");
+        const visitorRes = await api.get("/darshan");
         setVisitorHours(visitorRes.data);
       } catch (error) {
         console.error("Error fetching hours:", error);
@@ -147,7 +147,7 @@ const Visit = () => {
       <Header />
 
       {/* Hero Banner */}
-      <section className="relative h-[40vh] min-h-[300px] flex items-center justify-center overflow-hidden bg-secondary">
+      <section className="relative h-[2vh] min-h-[250px] flex items-center justify-center overflow-hidden bg-secondary">
         <div className="absolute inset-0 bg-gradient-to-b from-secondary/50 to-secondary z-10" />
         {/* Placeholder for Temple Image */}
         <div className="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1545231494-06d15a5f9790?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center" />

@@ -141,7 +141,7 @@ export function CalendarSection() {
                   variant="default"
                   className="bg-secondary text-white hover:bg-secondary/90"
                 >
-                  <Link to="/events">
+                  <Link to="/events#upcoming">
                     View All Events <ArrowRight className="h-4 w-4 ml-2" />
                   </Link>
                 </Button>

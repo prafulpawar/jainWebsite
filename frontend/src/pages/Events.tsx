@@ -92,6 +92,26 @@ const EventsPage = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+
+    useEffect(() => {
+    // Only run this logic once data is loaded
+    if (!loading) {
+      if (location.hash) {
+        // If there is a hash (e.g. /events#upcoming), scroll to that section
+        const id = location.hash.replace("#", "");
+        const element = document.getElementById(id);
+        if (element) {
+          setTimeout(() => {
+            element.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 100);
+        }
+      } else {
+        // FIX: If there is NO hash (e.g. clicked from Footer), scroll to Top
+        window.scrollTo(0, 0);
+      }
+    }
+  }, [loading, location]); // 
+
   const getImageUrl = (path) => {
     if (!path) return null;
     if (path.startsWith('http')) return path;
@@ -279,7 +299,7 @@ const EventsPage = () => {
       <Header />
       <main>
         {/* Hero Banner */}
-        <section className="relative py-16 md:py-20 bg-gradient-to-r from-secondary via-maroon to-secondary">
+        <section className="relative min-h-[280px] py-16 md:py-20 bg-gradient-to-r from-secondary via-maroon to-secondary">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-repeat" />
           </div>
