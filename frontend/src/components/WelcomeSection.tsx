@@ -2,7 +2,7 @@ import React from "react";
 
 export function WelcomeSection() {
   return (
-    <section id="about" className="py-16 md:py-24 bg-background">
+    <section id="about" className="pt-16 pb-6 md:pt-24 md:pb-8 bg-background">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="font-serif text-3xl md:text-4xl font-bold text-secondary mt-2">

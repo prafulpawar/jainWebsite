@@ -70,7 +70,7 @@ export function CalendarSection() {
   }
 
   return (
-    <section id="calendar" className="py-16 md:py-24 mandala-pattern relative">
+    <section id="calendar"className="pt-2 pb-6 md:pt-14 md:pb-8 bg-background">
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-12">
           <span className="text-gold font-medium uppercase tracking-wider">Temple Schedule</span>
