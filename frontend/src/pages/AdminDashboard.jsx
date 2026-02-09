@@ -12,14 +12,14 @@ import {
   CalendarIcon, Clock, LogOut, MapPin, Loader2, Trash2,
   Pencil, X, Upload, Image as ImageIcon, FileImage, History, AlertTriangle,
   ChevronLeft, ChevronRight, Search, FilterX, Plus, CheckCircle, AlertCircle,
-  BookOpen, Video, Link as LinkIcon, User, PlayCircle, Library, Star
+  BookOpen, Video, Link as LinkIcon, User, PlayCircle, Library, Star, Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import api from '@/utils/api';
 
 import DeleteConfirmationModal from './DeleteConfirmationModal';
 
-// 1. SPECIFIC COLORS 
+// ... (Keep your color constants and helper functions here) ...
 const typeColors = {
   Festival: "bg-saffron text-primary-foreground",
   Puja: "bg-gold text-foreground",
@@ -27,8 +27,6 @@ const typeColors = {
   Celebration: "bg-saffron-light text-foreground",
   Community: "bg-maroon text-secondary-foreground",
 };
-
-// 2. DYNAMIC PALETTE
 const dynamicPalette = [
   "bg-blue-100 text-blue-800 border-blue-200",
   "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -40,8 +38,6 @@ const dynamicPalette = [
   "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200",
   "bg-indigo-100 text-indigo-800 border-indigo-200",
 ];
-
-// 3. HELPER FUNCTION
 const getTypeColor = (typeName) => {
   if (!typeName) return "bg-slate-100 text-slate-800";
   if (typeColors[typeName]) return typeColors[typeName];
@@ -60,17 +56,18 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
 
   // --- TABS & VIEW STATES ---
-  const [activeTab, setActiveTab] = useState('events'); // events | darshan | resources
+  // Added 'visitors' to activeTab logic
+  const [activeTab, setActiveTab] = useState('events'); // events | darshan | visitors | resources
   const [eventView, setEventView] = useState('upcoming');
-  const [resourceView, setResourceView] = useState('articles'); // articles | videos
+  const [resourceView, setResourceView] = useState('articles');
 
   // --- COMMON STATES ---
   const [searchQuery, setSearchQuery] = useState("");
   const [filterDate, setFilterDate] = useState(null);
 
   // PAGINATION STATES
-  const [currentPage, setCurrentPage] = useState(1); // For Events
-  const [currentResourcePage, setCurrentResourcePage] = useState(1); // NEW: For Resources
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentResourcePage, setCurrentResourcePage] = useState(1);
 
   const [loading, setLoading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -79,6 +76,7 @@ const AdminDashboard = () => {
   // --- DATA LISTS ---
   const [eventsList, setEventsList] = useState([]);
   const [darshanList, setDarshanList] = useState([]);
+  const [visitorList, setVisitorList] = useState([]); // NEW: Visitor List
   const [articlesList, setArticlesList] = useState([]);
   const [videosList, setVideosList] = useState([]);
 
@@ -88,6 +86,7 @@ const AdminDashboard = () => {
   // --- EDIT IDS ---
   const [editEventId, setEditEventId] = useState(null);
   const [editDarshanId, setEditDarshanId] = useState(null);
+  const [editVisitorId, setEditVisitorId] = useState(null); // NEW: Edit ID
 
   // --- TOAST & MODALS ---
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
@@ -103,6 +102,11 @@ const AdminDashboard = () => {
   });
 
   const [darshanData, setDarshanData] = useState({
+    dayRange: '', startTime: '', endTime: ''
+  });
+
+  // NEW: Visitor Data State
+  const [visitorData, setVisitorData] = useState({
     dayRange: '', startTime: '', endTime: ''
   });
 
@@ -140,6 +144,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchEvents();
     fetchDarshan();
+    fetchVisitors(); // NEW
     fetchEventTypes();
     fetchArticles();
     fetchVideos();
@@ -147,7 +152,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-    setCurrentResourcePage(1); // Reset resource page on view switch
+    setCurrentResourcePage(1);
     setSelectedFiles([]);
   }, [searchQuery, filterDate, activeTab, resourceView]);
 
@@ -165,6 +170,11 @@ const AdminDashboard = () => {
   const fetchDarshan = async () => {
     try { const res = await api.get('/darshan'); setDarshanList(res.data); }
     catch (err) { console.error("Failed to fetch darshan", err); }
+  };
+  // NEW: Fetch Visitors
+  const fetchVisitors = async () => {
+    try { const res = await api.get('/visitors'); setVisitorList(res.data); }
+    catch (err) { console.error("Failed to fetch visitors", err); }
   };
   const fetchEventTypes = async () => {
     try {
@@ -196,7 +206,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // --- EVENTS LOGIC ---
+  // ... (Event Logic remains the same) ...
   const handleViewSwitchRequest = (targetView) => {
     if (eventView === targetView) return;
     if (editEventId) setWarningModal({ isOpen: true, targetView });
@@ -211,7 +221,7 @@ const AdminDashboard = () => {
     setWarningModal({ isOpen: false, targetView: null });
   };
   const cancelSwitchView = () => { setWarningModal({ isOpen: false, targetView: null }); };
-
+  
   const resetEventForm = () => {
     const defaultType = availableTypes.length > 0 ? availableTypes[0].name : '';
     setEventData({ title: '', time: '', type: defaultType, description: '', location: 'Main Temple Hall' });
@@ -300,7 +310,23 @@ const AdminDashboard = () => {
     finally { setLoading(false); }
   };
 
-  // --- RESOURCES LOGIC (ARTICLES & VIDEOS) ---
+  // --- NEW: VISITOR LOGIC ---
+  const resetVisitorForm = () => { setVisitorData({ dayRange: '', startTime: '', endTime: '' }); setEditVisitorId(null); };
+  const handleEditVisitor = (timing) => { setVisitorData({ dayRange: timing.dayRange, startTime: timing.startTime, endTime: timing.endTime }); setEditVisitorId(timing.id); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const handleVisitorSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      if (editVisitorId) { await api.put(`/update-visitor/${editVisitorId}`, visitorData); showToast("Visitor schedule updated!"); }
+      else { await api.post('/add-visitor', visitorData); showToast("New visitor schedule added!"); }
+      resetVisitorForm();
+      fetchVisitors();
+    } catch (err) { console.error(err); showToast("Error saving timing", "error"); }
+    finally { setLoading(false); }
+  };
+
+
+  // ... (Resources Logic remains the same) ...
   const handleArticleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -342,12 +368,9 @@ const AdminDashboard = () => {
     finally { setLoading(false); }
   };
 
-  // --- NEW: FEATURE TOGGLE LOGIC (Max 3) ---
   const handleToggleFeature = async (type, item) => {
     const isCurrentlyFeatured = item.isFeatured;
     const list = type === 'article' ? articlesList : videosList;
-
-    // Frontend Check for "Max 3"
     if (!isCurrentlyFeatured) {
       const featuredCount = list.filter(i => i.isFeatured).length;
       if (featuredCount >= 3) {
@@ -355,18 +378,13 @@ const AdminDashboard = () => {
         return;
       }
     }
-
     try {
       const endpoint = type === 'article'
         ? `/toggle-featured-article/${item.id}`
         : `/toggle-featured-video/${item.id}`;
-
       await api.put(endpoint);
-
-      // Refresh list to see change
       if (type === 'article') fetchArticles();
       else fetchVideos();
-
       showToast(`${type === 'article' ? 'Article' : 'Video'} ${isCurrentlyFeatured ? 'removed from' : 'added to'} featured list.`);
     } catch (err) {
       console.error(err);
@@ -390,6 +408,11 @@ const AdminDashboard = () => {
         if (editDarshanId === deleteModal.id) resetDarshanForm();
         fetchDarshan();
         showToast("Schedule deleted.");
+      } else if (deleteModal.type === 'visitor') { // NEW
+        await api.delete(`/delete-visitor/${deleteModal.id}`);
+        if (editVisitorId === deleteModal.id) resetVisitorForm();
+        fetchVisitors();
+        showToast("Visitor schedule deleted.");
       } else if (deleteModal.type === 'article') {
         await api.delete(`/delete-article/${deleteModal.id}`);
         fetchArticles();
@@ -404,7 +427,7 @@ const AdminDashboard = () => {
     finally { setLoading(false); }
   };
 
-  // --- EVENT PAGINATION LOGIC ---
+  // ... (Pagination Logic remains the same) ...
   const upcomingDates = eventsList.filter(ev => ev.fullDate && !isPast(parseISO(ev.fullDate))).map(ev => parseISO(ev.fullDate));
   const pastDates = eventsList.filter(ev => ev.fullDate && isPast(parseISO(ev.fullDate))).map(ev => parseISO(ev.fullDate));
   const activeEventsList = eventView === 'upcoming'
@@ -419,33 +442,25 @@ const AdminDashboard = () => {
 
   const totalItems = filteredEvents.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
-
   useEffect(() => { if (currentPage > totalPages && totalPages > 0) setCurrentPage(totalPages); }, [totalItems, totalPages, currentPage]);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedEvents = filteredEvents.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   const goToNextPage = () => { if (currentPage < totalPages) setCurrentPage(p => p + 1); };
   const goToPrevPage = () => { if (currentPage > 1) setCurrentPage(p => p - 1); };
 
-  // --- RESOURCE PAGINATION LOGIC (NEW) ---
   const activeResourceList = resourceView === 'articles' ? articlesList : videosList;
   const totalResourceItems = activeResourceList.length;
   const totalResourcePages = Math.max(1, Math.ceil(totalResourceItems / ITEMS_PER_PAGE));
-
-  // Ensure we don't stay on a page that doesn't exist (e.g. after deleting items)
   useEffect(() => { if (currentResourcePage > totalResourcePages && totalResourcePages > 0) setCurrentResourcePage(totalResourcePages); }, [totalResourceItems, totalResourcePages, currentResourcePage]);
-
   const startResourceIndex = (currentResourcePage - 1) * ITEMS_PER_PAGE;
   const paginatedResources = activeResourceList.slice(startResourceIndex, startResourceIndex + ITEMS_PER_PAGE);
-
   const goToNextResourcePage = () => { if (currentResourcePage < totalResourcePages) setCurrentResourcePage(p => p + 1); };
   const goToPrevResourcePage = () => { if (currentResourcePage > 1) setCurrentResourcePage(p => p - 1); };
 
 
   return (
     <div className="min-h-screen bg-gray-50/50 relative">
-
       <ToastPopup show={toast.show} message={toast.message} type={toast.type} onClose={() => setToast(prev => ({ ...prev, show: false }))} />
-
       <DeleteConfirmationModal
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ ...deleteModal, isOpen: false })}
@@ -454,7 +469,6 @@ const AdminDashboard = () => {
         title={`Delete ${deleteModal.type ? deleteModal.type.charAt(0).toUpperCase() + deleteModal.type.slice(1) : 'Item'}`}
         description="Are you sure? This action cannot be undone."
       />
-
       <UnsavedChangesModal isOpen={warningModal.isOpen} onClose={cancelSwitchView} onConfirm={confirmSwitchView} />
       <AddTypeModal isOpen={isTypeModalOpen} onClose={() => setIsTypeModalOpen(false)} onConfirm={handleAddNewType} />
 
@@ -472,7 +486,7 @@ const AdminDashboard = () => {
       <main className="container mx-auto p-6 space-y-6">
 
         {/* --- TOP NAV TABS --- */}
-        <div className="flex gap-2 md:gap-4 border-b border-gray-200 pb-4 overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
+        <div className="flex gap-2 md:gap-4 border-b border-gray-200 pb-4 overflow-x-auto">
           <Button
             variant={activeTab === 'events' ? "default" : "ghost"}
             onClick={() => setActiveTab('events')}
@@ -487,6 +501,14 @@ const AdminDashboard = () => {
           >
             <Clock className="w-4 h-4 mr-2" /> Darshan<span className="hidden md:inline"> Timings</span>
           </Button>
+          {/* NEW VISITORS TAB */}
+          <Button
+            variant={activeTab === 'visitors' ? "default" : "ghost"}
+            onClick={() => setActiveTab('visitors')}
+            className={activeTab === 'visitors' ? "bg-saffron text-secondary font-bold hover:bg-saffron/90" : "text-gray-500"}
+          >
+            <Users className="w-4 h-4 mr-2" /> Visitor<span className="hidden md:inline"> Hours</span>
+          </Button>
           <Button
             variant={activeTab === 'resources' ? "default" : "ghost"}
             onClick={() => setActiveTab('resources')}
@@ -498,7 +520,9 @@ const AdminDashboard = () => {
 
         {/* --- EVENTS TAB --- */}
         {activeTab === 'events' && (
-          <div className="grid lg:grid-cols-3 gap-8 ">
+          // ... (Existing Events UI code) ...
+          // Note: Keeping it brief for readability, paste your existing events code here
+            <div className="grid lg:grid-cols-3 gap-8 ">
             <Card className="border-gold/20 shadow-lg lg:col-span-1 h-fit sticky top-24">
               <CardHeader className="border-b border-gold/20 bg-secondary/5 flex flex-row items-center justify-between">
                 <CardTitle className="text-secondary font-serif">
@@ -794,8 +818,73 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* --- RESOURCES TAB (ARTICLES & VIDEOS) --- */}
+        {/* --- NEW: VISITORS TAB --- */}
+        {activeTab === 'visitors' && (
+          <div className="grid lg:grid-cols-3 gap-8">
+            <Card className="border-gold/20 shadow-lg h-fit">
+              <CardHeader className="border-b border-gold/20 bg-secondary/5 flex flex-row items-center justify-between">
+                <CardTitle className="text-secondary font-serif">{editVisitorId ? "Edit Visitor Time" : "Add Visitor Time"}</CardTitle>
+                {editVisitorId && (
+                  <Button variant="ghost" size="sm" onClick={resetVisitorForm} className="h-8 text-xs text-muted-foreground"><X className="h-3 w-3 mr-1" /> Cancel</Button>
+                )}
+              </CardHeader>
+              <CardContent className="pt-6">
+                <form onSubmit={handleVisitorSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-gray-500 uppercase">Day Range</label>
+                    <Input placeholder="e.g. Sat - Sun" value={visitorData.dayRange} onChange={e => setVisitorData({ ...visitorData, dayRange: e.target.value })} required />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-gray-500 uppercase">Start Time</label>
+                    <Input type="time" placeholder="e.g. 10:00 AM" value={visitorData.startTime} onChange={e => setVisitorData({ ...visitorData, startTime: e.target.value })} required />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-gray-500 uppercase">End Time</label>
+                    <Input type="time" placeholder="e.g. 05:00 PM" value={visitorData.endTime} onChange={e => setVisitorData({ ...visitorData, endTime: e.target.value })} required />
+                  </div>
+                  <Button type="submit" className={cn("w-full text-black", editVisitorId ? "bg-blue-600 hover:bg-blue-700" : "")} disabled={loading}>
+                    {loading ? <Loader2 className="animate-spin mr-2" /> : (editVisitorId ? "Update Visitor Timing" : "Save Visitor Timing")}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+            <Card className="border-gold/20 shadow-lg lg:col-span-2 bg-gradient-to-br from-card to-blue-50/20">
+              <CardHeader className="border-b border-gold/20 bg-gradient-to-r from-blue-100/50 to-indigo-100/50">
+                <CardTitle className="flex items-center gap-2 font-serif text-secondary"><Users className="h-5 w-5 text-blue-600" /> Visitor / Office Hours</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {visitorList.map((timing, index) => (
+                    <div key={index} className={cn("border-b border-blue-100 pb-4 last:border-0 bg-white/60 p-4 rounded-lg", editVisitorId === timing.id && "ring-2 ring-blue-400 bg-blue-50")}>
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-semibold text-secondary text-lg">{timing.dayRange}</h4>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" className="text-blue-500 hover:bg-blue-50" onClick={() => handleEditVisitor(timing)}><Pencil className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" className="text-red-500 hover:bg-red-50" onClick={() => initiateDelete('visitor', timing.id)}><Trash2 className="h-4 w-4" /></Button>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm mt-2">
+                        <div className="bg-white/80 rounded-md px-4 py-2 border border-blue-100 flex items-center gap-3 w-full shadow-sm">
+                          <Clock className="w-4 h-4 text-blue-500" />
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase">Visiting Hours</span>
+                            <span className="font-medium text-foreground text-base">{timing.startTime} - {timing.endTime}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {visitorList.length === 0 && <p className="text-center text-gray-500">No visitor timings configured.</p>}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* --- RESOURCES TAB --- */}
         {activeTab === 'resources' && (
+          // ... (Existing Resources UI code) ...
+          // Keeping it brief, paste your resources code here
           <div className="grid lg:grid-cols-3 gap-8">
 
             {/* TOGGLE & FORM CARD */}
@@ -1032,9 +1121,8 @@ const AdminDashboard = () => {
     </div>
   );
 };
-
-// --- SUB COMPONENTS ---
-
+// ... (Sub components like ToastPopup, UnsavedChangesModal, etc. remain here) ...
+// (These were correct in your provided code, just ensure they are included at the bottom of the file)
 const ToastPopup = ({ show, message, type, onClose }) => {
   if (!show) return null;
   const isSuccess = type === 'success';
@@ -1160,5 +1248,4 @@ const PastEventItem = ({ event, onEdit, onDelete, activeId }) => {
     </div>
   );
 };
- 
 export default AdminDashboard;

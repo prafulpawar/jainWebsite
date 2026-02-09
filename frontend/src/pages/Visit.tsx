@@ -29,7 +29,8 @@ import api from "@/utils/api";
 const Visit = () => {
   const { hash } = useLocation();
   const [templeHours, setTempleHours] = useState([]);
-
+ const [darshanHours, setDarshanHours] = useState([]);
+  const [visitorHours, setVisitorHours] = useState([]); // NEW
   // Handle Scroll to Section on load
   useEffect(() => {
     if (hash) {
@@ -45,13 +46,18 @@ const Visit = () => {
   }, [hash]);
 
   // Fetch Temple Hours (Darshan)
-  useEffect(() => {
+   useEffect(() => {
     const fetchHours = async () => {
       try {
-        const response = await api.get("/darshan");
-        setTempleHours(response.data);
+        const darshanRes = await api.get("/darshan");
+        setDarshanHours(darshanRes.data);
+
+        // Fetch Visitors
+        const visitorRes = await api.get("/visitors");
+        setVisitorHours(visitorRes.data);
+
       } catch (error) {
-        console.error("Error fetching temple hours:", error);
+        console.error("Error fetching hours:", error);
       }
     };
     fetchHours();
