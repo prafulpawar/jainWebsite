@@ -12,7 +12,7 @@ import {
   CalendarIcon, Clock, LogOut, MapPin, Loader2, Trash2,
   Pencil, X, Upload, Image as ImageIcon, FileImage, History, AlertTriangle,
   ChevronLeft, ChevronRight, Search, FilterX, Plus, CheckCircle, AlertCircle,
-  BookOpen, Video, Link as LinkIcon, User, Eye, PlayCircle, Library, Star
+  BookOpen, Video, Link as LinkIcon, User, PlayCircle, Library, Star
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import api from '@/utils/api';
@@ -111,7 +111,7 @@ const AdminDashboard = () => {
   });
 
   const [videoData, setVideoData] = useState({
-    title: '', speaker: '', duration: '', views: '', videoLink: ''
+    title: '', speaker: '', duration: '', videoLink: ''
   });
 
   // --- DERIVED LOGIC FOR PAST EVENTS ---
@@ -330,13 +330,12 @@ const AdminDashboard = () => {
       formData.append('title', videoData.title);
       formData.append('speaker', videoData.speaker);
       formData.append('duration', videoData.duration);
-      formData.append('views', videoData.views);
       formData.append('videoLink', videoData.videoLink);
       if (selectedFiles.length > 0) formData.append('thumbnail', selectedFiles[0]);
 
       await api.post('/add-video', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       showToast("Video resource added!");
-      setVideoData({ title: '', speaker: '', duration: '', views: '', videoLink: '' });
+      setVideoData({ title: '', speaker: '', duration: '', videoLink: '' });
       setSelectedFiles([]);
       fetchVideos();
     } catch (err) { console.error(err); showToast("Failed to add video", "error"); }
@@ -868,16 +867,12 @@ const AdminDashboard = () => {
                       <label className="text-xs font-semibold text-gray-500 uppercase">Speaker / Channel</label>
                       <Input placeholder="e.g. Temple Channel" value={videoData.speaker} onChange={e => setVideoData({ ...videoData, speaker: e.target.value })} />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <label className="text-xs font-semibold text-gray-500 uppercase">Duration</label>
-                        <Input placeholder="e.g. 14:20" value={videoData.duration} onChange={e => setVideoData({ ...videoData, duration: e.target.value })} />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-xs font-semibold text-gray-500 uppercase">Views (Manual)</label>
-                        <Input placeholder="e.g. 1.2K" value={videoData.views} onChange={e => setVideoData({ ...videoData, views: e.target.value })} />
-                      </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-gray-500 uppercase">Duration</label>
+                      <Input placeholder="e.g. 14:20" value={videoData.duration} onChange={e => setVideoData({ ...videoData, duration: e.target.value })} />
                     </div>
+                    
                     <div className="space-y-2">
                       <label className="text-xs font-semibold text-gray-500 uppercase">Video Link</label>
                       <Input placeholder="https://youtube.com/..." value={videoData.videoLink} onChange={e => setVideoData({ ...videoData, videoLink: e.target.value })} />
@@ -1006,9 +1001,6 @@ const AdminDashboard = () => {
                             </div>
                             <p className="text-xs text-muted-foreground mt-1">{video.speaker}</p>
                             <div className="flex items-center gap-4 mt-2">
-                              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded flex items-center gap-1">
-                                <Eye className="w-3 h-3" /> {video.views} views
-                              </span>
                               {video.videoLink && (
                                 <a href={video.videoLink} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline flex items-center gap-1">
                                   <LinkIcon className="w-3 h-3" /> Watch Link
@@ -1168,5 +1160,5 @@ const PastEventItem = ({ event, onEdit, onDelete, activeId }) => {
     </div>
   );
 };
-
+ 
 export default AdminDashboard;
