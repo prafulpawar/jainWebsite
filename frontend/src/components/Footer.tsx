@@ -4,7 +4,7 @@ import { Facebook, Instagram, Youtube, Mail, Phone, MapPin, Send, Heart } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-
+import logoJain from "@/assets/logoJain.jpg"; 
 
 const quickLinks = [
   
@@ -14,6 +14,7 @@ const quickLinks = [
   // { name: "Temple Services", href: "/services" },
   { name: "Resources ", href: "/resources" },
   { name: "Community", href: "/events#groups" },
+   { name: "Visitors", href: "/Visitor" },
 ];
 
 
@@ -39,7 +40,12 @@ export function Footer() {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-saffron to-gold flex items-center justify-center">
-                <span className="text-2xl font-serif font-bold text-primary-foreground">॥</span>
+                            <img 
+              src={logoJain} 
+              alt="JSOT Logo" 
+              className="w-12 h-12 rounded-full object-cover shadow-lg border border-gold/20" 
+            />
+
               </div>
               <div>
                 <span className="font-serif text-xl font-bold block">JSOT</span>

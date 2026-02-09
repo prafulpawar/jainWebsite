@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Facebook, Instagram, Youtube, Sun, Moon, Calendar, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils"; 
+import logoJain from "@/assets/logoJain.jpg"; 
 
 const navItems = [
   { name: "Home", href: "/" },
@@ -29,7 +30,7 @@ const navItems = [
   },
   { name: "Resources", href: "/resources" },
   // { name: "Contact", href: "/contact" },
-  { name: "Visitor", href: '/Visitor' }
+  { name: "Visitors", href: '/Visitor' }
 ];
 
 export function Header() {
@@ -125,7 +126,11 @@ export function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-saffron to-gold flex items-center justify-center shadow-lg">
-              <span className="text-2xl font-serif font-bold text-primary-foreground">॥</span>
+             <img 
+              src={logoJain} 
+              alt="JSOT Logo" 
+              className="w-12 h-12 rounded-full object-cover shadow-lg border border-gold/20" 
+            />
             </div>
             <div className="flex flex-col">
               <span className="font-serif text-xl font-bold text-secondary">JSOT</span>
