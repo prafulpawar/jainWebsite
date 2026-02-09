@@ -324,6 +324,7 @@ export const getVideos = async (req, res) => {
     const videos = await Video.findAll({ order: [['createdAt', 'DESC']] });
     res.json(videos);
   } catch (error) {
+    console.log(error)
     res.status(500).json({ error: error.message });
   }
 };
@@ -341,7 +342,7 @@ export const addVideo = async (req, res) => {
     const newVideo = await Video.create({
       title,
       speaker,
-      duration,
+      // duration,
       videoLink,
       thumbnail: thumbnailPath
     });

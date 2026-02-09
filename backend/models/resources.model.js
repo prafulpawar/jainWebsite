@@ -22,7 +22,7 @@ export const VideoModel = (sequelize) => {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     title: { type: DataTypes.STRING, allowNull: false },
     speaker: { type: DataTypes.STRING },
-    duration: { type: DataTypes.STRING }, // e.g. "45:30"
+    // duration: { type: DataTypes.STRING }, // e.g. "45:30"
     thumbnail: { type: DataTypes.STRING }, // Stores "/uploads/filename.jpg"
     videoLink: { type: DataTypes.STRING } ,// The actual YouTube/Video URL
      isFeatured: {
