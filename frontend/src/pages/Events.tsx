@@ -413,9 +413,14 @@ const EventsPage = () => {
         </section>
 
         {/* UPCOMING EVENTS SECTION */}
-        <section id="upcoming" className="py-12 md:py-16 mandala-pattern relative scroll-mt-20">
+        <section id="upcoming" className="py-6 md:py-16 mandala-pattern relative scroll-mt-20">
           <div className="container mx-auto px-4 relative z-10">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+
+             <div className="lg:hidden mb-8">
+                   {renderDarshanTimings()}
+                </div>
 
               {/* Left Column: Events List */}
               <div className="lg:col-span-2 order-1">
@@ -471,9 +476,7 @@ const EventsPage = () => {
 
                 {/* --- MOBILE ONLY: DARSHAN TIMINGS SEPARATED FROM CALENDAR --- */}
                 {/* Placed immediately after the Upcoming Events Header, before the List */}
-                <div className="lg:hidden mb-8">
-                   {renderDarshanTimings()}
-                </div>
+               
 
                 {loading ? (
                   <div className="flex justify-center py-20"><Loader2 className="animate-spin h-10 w-10 text-saffron" /></div>

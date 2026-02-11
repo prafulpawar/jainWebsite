@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Facebook, Instagram, Youtube, Sun, Moon, Calendar, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import logoJain from "@/assets/logoJain.jpg";
 import SunCalc from "suncalc";
+import api from '@/utils/api';
 
 const navItems = [
   { name: "Home", href: "/" },
@@ -47,57 +48,81 @@ export function Header() {
     setMobileSubmenuOpen(mobileSubmenuOpen === name ? null : name);
   };
 
-  const formatTime = (date: Date) =>
-    date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-      timeZone: "America/Toronto", 
-    });
+  
 
-  const addMinutes = (date: Date, minutes: number) =>
-    new Date(date.getTime() + minutes * 60000);
+  const [panchang, setPanchang] = useState({
+    tithi: "",
+    navkarsi: "",
+    chovihar: "",
+  });
 
+  useEffect(() => {
+    const fetchPanchangData = async () => {
+       const todayObj = new Date();
+        const dateKey = todayObj.toISOString().split("T")[0]; 
 
-  const getPanchangData = () => {
-    const today = new Date();
-
-    const moonPhases = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"];
-    const tithis = [
-      "Pratipada", "Dwitiya", "Tritiya", "Chaturthi", "Panchami",
-      "Shashthi", "Saptami", "Ashtami", "Navami", "Dashami",
-      "Ekadashi", "Dwadashi", "Trayodashi", "Chaturdashi", "Purnima", "Amavasya"
-    ];
-
-    const dayOfMonth = today.getDate();
-    const tithiIndex = (dayOfMonth - 1) % 16;
-    const moonIndex = Math.floor((dayOfMonth / 30) * 8) % 8;
-
-    // 🌞 Sun times for Toronto
-    const sunTimes = SunCalc.getTimes(
-      today,
-      43.6532,
-      -79.3832
-    );
-
-    const sunrise = sunTimes.sunrise;
-    const sunset = sunTimes.sunset;
+        // 2. Fetch Tithi from YOUR Backend using your Axios 'api' instance
+        // This automatically uses the baseURL: http://localhost:5000/api
+        const response = await api.get('/panchang-2025');
+        const panchangList = response.data; // Axios returns data inside .data
+           console.log(panchangList)
+        // Find the object that matches today's date
+        const todayData = panchangList.find(item => item.date === dateKey);
+        const currentTithi = todayData ? todayData.tithi : "Data Not Found";
 
 
-     const navkarsi = addMinutes(sunrise, 48);
-     const chovihar = sunset; 
+      try {
+         
 
-      return {
-      tithi: tithis[tithiIndex], // Note: Yeh mock tithi hai, real nahi
-      moonPhase: moonPhases[moonIndex],
-      sunrise: formatTime(sunrise),
-      sunset: formatTime(sunset),
-      navkarsi: formatTime(navkarsi),
-      chovihar: formatTime(chovihar),
+        const torontoDate = new Date().toLocaleDateString("en-CA", {
+          timeZone: "America/Toronto",
+        });
+
+        const response = await fetch(
+          `https://api.sunrise-sunset.org/json?lat=43.6532&lng=-79.3832&date=${torontoDate}&formatted=0`
+        );
+        // const response = await fetch(
+        //   "https://api.sunrise-sunset.org/json?lat=43.6532&lng=-79.3832&date=today&formatted=0"
+        // );
+        const data = await response.json();
+
+        if (data.status === "OK") {
+          // API returns UTC time
+          const sunriseTime = new Date(data.results.sunrise);
+          const sunsetTime = new Date(data.results.sunset);
+
+          // Navkarsi = Sunrise + 48 mins
+          const navkarsiTime = new Date(sunriseTime.getTime() + 48 * 60000);
+
+          // Chovihar = Sunset
+          const choviharTime = sunsetTime;
+
+          // 👇 FIX: Toronto Timezone Formatting Function
+          const formatTorontoTime = (date) => {
+            return date.toLocaleTimeString("en-US", {
+              timeZone: "America/Toronto", // Forces Toronto Time
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            });
+          };
+
+          setPanchang({
+            tithi: currentTithi,
+            navkarsi: formatTorontoTime(navkarsiTime), // Corrected
+            chovihar: formatTorontoTime(choviharTime), // Corrected
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch sun times:", error);
+        setPanchang(prev => ({ ...prev, tithi: currentTithi }));
+      }
     };
-  };
 
-  const panchang = getPanchangData();
+    fetchPanchangData();
+  }, []);
+
+
 
   return (
     <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm shadow-md border-b-2 border-gold/30">
