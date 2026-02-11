@@ -4,17 +4,17 @@ import { Facebook, Instagram, Youtube, Mail, Phone, MapPin, Send, Heart } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import logoJain from "@/assets/logoJain.jpg"; 
+import logoJain from "@/assets/logoJain.jpg";
 
 const quickLinks = [
-  
+
   { name: "Home", href: "/" },
   { name: "About Us", href: "/about" },
   { name: "Events", href: "/events" },
   // { name: "Temple Services", href: "/services" },
   { name: "Resources ", href: "/resources" },
   // { name: "Community", href: "/about#board" },
-   { name: "Visitors", href: "/visitor" },
+  { name: "Visitors", href: "/visitor" },
 ];
 
 
@@ -40,11 +40,11 @@ export function Footer() {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-saffron to-gold flex items-center justify-center">
-                            <img 
-              src={logoJain} 
-              alt="JSOT Logo" 
-              className="w-12 h-12 rounded-full object-cover shadow-lg border border-gold/20" 
-            />
+                <img
+                  src={logoJain}
+                  alt="JSOT Logo"
+                  className="w-12 h-12 rounded-full object-cover shadow-lg border border-gold/20"
+                />
 
               </div>
               <div>
@@ -57,29 +57,29 @@ export function Footer() {
             </p>
 
             <div className="flex gap-3">
-              <a 
-                href="https://www.facebook.com/jsotcanada/" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="w-10 h-10 rounded-full bg-card/10 hover:bg-gold/20 flex items-center justify-center transition-colors" 
+              <a
+                href="https://www.facebook.com/jsotcanada/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-card/10 hover:bg-gold/20 flex items-center justify-center transition-colors"
                 aria-label="Facebook"
               >
                 <Facebook className="h-5 w-5" />
               </a>
-              <a 
-                href="https://www.instagram.com/jainsocietyoftoronto/?hl=en" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="w-10 h-10 rounded-full bg-card/10 hover:bg-gold/20 flex items-center justify-center transition-colors" 
+              <a
+                href="https://www.instagram.com/jainsocietyoftoronto/?hl=en"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-card/10 hover:bg-gold/20 flex items-center justify-center transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram className="h-5 w-5" />
               </a>
-              <a 
-                href="https://www.youtube.com/@jainsocietyoftoronto-media131" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="w-10 h-10 rounded-full bg-card/10 hover:bg-gold/20 flex items-center justify-center transition-colors" 
+              <a
+                href="https://www.youtube.com/@jainsocietyoftoronto-media131"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-card/10 hover:bg-gold/20 flex items-center justify-center transition-colors"
                 aria-label="YouTube"
               >
                 <Youtube className="h-5 w-5" />
@@ -89,13 +89,13 @@ export function Footer() {
 
           {/* Quick Links - Mobile: Left Aligned, Desktop: Centered Block/Left Text */}
           <div className="flex flex-col items-start md:items-center">
-            <div className="w-full md:w-fit"> 
+            <div className="w-full md:w-fit">
               <h4 className="font-serif text-lg font-semibold text-gold mb-4">Quick Links</h4>
               <ul className="space-y-2">
                 {quickLinks.map((link) => (
                   <li key={link.name}>
-                    <Link 
-                      to={link.href} 
+                    <Link
+                      to={link.href}
                       className="text-secondary-foreground/80 hover:text-gold transition-colors text-sm"
                     >
                       {link.name}
@@ -110,8 +110,8 @@ export function Footer() {
           <div>
             <h4 className="font-serif text-lg font-semibold text-gold mb-4">Contact Us</h4>
             <div className="space-y-3 text-sm text-secondary-foreground/80">
-              <a 
-                href="https://maps.google.com/?q=441+Ellesmere+Rd,+Scarborough,+ON+M1R+4E5" 
+              <a
+                href="https://maps.google.com/?q=441+Ellesmere+Rd,+Scarborough,+ON+M1R+4E5"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-start gap-2 hover:text-gold transition-colors"
@@ -163,21 +163,25 @@ export function Footer() {
             className="grayscale hover:grayscale-0 transition-all duration-500"
           />
 
-       
+
         </div>
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-gold/20 py-4">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-secondary-foreground/60">
-            © {new Date().getFullYear()} Jain Society of Toronto. All rights reserved.
-          </p>
-          <p className="text-sm text-secondary-foreground/60 flex items-center gap-1">
-            Made with <Heart className="h-4 w-4 text-saffron" /> for our community
-          </p>
-        </div>
-      </div>
+      <p className="text-sm text-secondary-foreground/60 flex items-center gap-1">
+        Made with
+        <Heart className="h-4 w-4 text-saffron" />
+        <a
+          href="https://cloudgenz.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-primary transition-colors"
+        >
+          CloudGenz
+        </a>
+        {' '}
+      </p>
+
     </footer>
   );
 }
