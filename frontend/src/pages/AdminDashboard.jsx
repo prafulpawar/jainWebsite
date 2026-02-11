@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { format, parseISO, isPast, isSameDay, parse } from "date-fns";
+import { format, parseISO, isPast, isSameDay, parse, isBefore, startOfDay, endOfDay } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -143,22 +143,29 @@ const AdminDashboard = () => {
   };
 
   // --- DERIVED LOGIC FOR PAST EVENTS ---
+// --- DERIVED LOGIC FOR PAST EVENTS ---
   const showUploadSection = (() => {
     if (!date) return false;
-    if (!isSameDay(date, new Date())) return isPast(date);
-    if (!eventData.time) return false;
-    try {
-      const timeFormats = ['h:mm aa', 'hh:mm aa', 'HH:mm', 'h:mm a', 'h:mma'];
-      let parsedDateTime = null;
-      for (const fmt of timeFormats) {
-        const result = parse(eventData.time, fmt, date);
-        if (!isNaN(result.getTime())) {
-          parsedDateTime = result;
-          break;
+    const now = new Date();
+    
+    // 1. Agar date purani hai
+    if (isBefore(date, startOfDay(now))) return true;
+    
+    // 2. Agar date future hai
+    if (isBefore(startOfDay(now), date)) return false;
+
+    // 3. Agar date aaj ki hai, time check karo
+    if (isSameDay(date, now)) {
+        if (!eventData.time) return false;
+        // Combine Form Date + Form Time
+        const dateStr = format(date, "yyyy-MM-dd");
+        const dateTimeStr = `${dateStr}T${eventData.time}:00`;
+        const specificTime = new Date(dateTimeStr);
+        
+        if (!isNaN(specificTime.getTime())) {
+            return specificTime < now; // True agar time nikal gaya
         }
-      }
-      if (parsedDateTime) return isPast(parsedDateTime);
-    } catch (error) { console.log("Time parse error", error); }
+    }
     return false;
   })();
 
@@ -429,11 +436,79 @@ const AdminDashboard = () => {
   };
 
   // ... (Pagination Logic) ...
-  const upcomingDates = eventsList.filter(ev => ev.fullDate && !isPast(parseISO(ev.fullDate))).map(ev => parseISO(ev.fullDate));
-  const pastDates = eventsList.filter(ev => ev.fullDate && isPast(parseISO(ev.fullDate))).map(ev => parseISO(ev.fullDate));
+  const isEventExpired = (event) => {
+    if (!event.fullDate) return false;
+    
+    const eventDate = parseISO(event.fullDate);
+    const now = new Date();
+
+    // 1. Agar Date Aaj se pehle ki hai (Yesterday etc.) -> EXPIRED
+    if (isBefore(eventDate, startOfDay(now))) {
+      return true;
+    }
+
+    // 2. Agar Date Aaj ke baad ki hai (Tomorrow etc.) -> NOT EXPIRED
+    if (isBefore(startOfDay(now), eventDate)) {
+      return false;
+    }
+
+    // 3. Agar Date AAJ ki hai -> Check Time
+    if (isSameDay(eventDate, now)) {
+      if (!event.time) return false; // Time nahi hai toh pure din upcoming maano
+      
+      try {
+        // Input time format "HH:mm" (24 hour) hota hai backend se
+        // Lekin agar format alag ho to safety ke liye parse try karenge
+        const timeString = event.time.trim();
+        const eventDateTimeStr = `${event.fullDate}T${timeString}:00`;
+        const specificEventDate = new Date(eventDateTimeStr);
+
+        if (!isNaN(specificEventDate.getTime())) {
+             // Agar Event Time (e.g. 8:10 PM) < Current Time (e.g. 8:12 PM) -> EXPIRED
+             return specificEventDate < now;
+        }
+
+        // Fallback agar format parsing fail ho (e.g. "10:00 AM" text)
+        const timeFormats = ['h:mm aa', 'hh:mm aa', 'HH:mm', 'h:mm a', 'h:mma'];
+        for (const fmt of timeFormats) {
+          const result = parse(timeString, fmt, eventDate);
+          if (!isNaN(result.getTime())) {
+             return isBefore(result, now);
+          }
+        }
+      } catch (e) {
+        return false;
+      }
+    }
+    
+    return false;
+  };
+
+  // Lists ko naye logic se filter karein
+  const upcomingDates = eventsList
+    .filter(ev => !isEventExpired(ev))
+    .map(ev => parseISO(ev.fullDate));
+    
+  const pastDates = eventsList
+    .filter(ev => isEventExpired(ev))
+    .map(ev => parseISO(ev.fullDate));
+
   const activeEventsList = eventView === 'upcoming'
-    ? eventsList.filter(ev => !isPast(parseISO(ev.fullDate))).sort((a, b) => new Date(a.fullDate) - new Date(b.fullDate))
-    : eventsList.filter(ev => isPast(parseISO(ev.fullDate))).sort((a, b) => new Date(b.fullDate) - new Date(a.fullDate));
+    ? eventsList
+        .filter(ev => !isEventExpired(ev)) // UPCOMING Logic
+        .sort((a, b) => {
+           // Sort by Date then Time
+           const dateA = new Date(`${a.fullDate}T${a.time || '00:00'}`);
+           const dateB = new Date(`${b.fullDate}T${b.time || '00:00'}`);
+           return dateA - dateB; 
+        })
+    : eventsList
+        .filter(ev => isEventExpired(ev)) // PAST Logic
+        .sort((a, b) => {
+           const dateA = new Date(`${a.fullDate}T${a.time || '00:00'}`);
+           const dateB = new Date(`${b.fullDate}T${b.time || '00:00'}`);
+           return dateB - dateA; // Descending
+        });
 
   const filteredEvents = activeEventsList.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase());

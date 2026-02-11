@@ -6,11 +6,10 @@ import { Footer } from "@/components/Footer";
 import {
   Calendar, Clock, MapPin, Loader2, History, ChevronLeft, ChevronRight,
   Users, BookOpen, Heart, Globe, GraduationCap, Briefcase, X, ImageIcon,
-  ExternalLink, Filter
+  ExternalLink
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import api from "@/utils/api";
-// CHANGE 1: Added 'parse' to imports
 import {
   isBefore, parseISO, startOfDay, startOfMonth, endOfMonth,
   startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth,
@@ -82,10 +81,7 @@ const EventsPage = () => {
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date());
 
-  // *** NEW STATE: Track specifically selected date from calendar ***
   const [selectedDate, setSelectedDate] = useState(null);
-  
-  // *** NEW STATE: Track mobile calendar visibility ***
   const [isMobileCalendarOpen, setIsMobileCalendarOpen] = useState(false);
 
   // Pagination State
@@ -128,6 +124,46 @@ const EventsPage = () => {
     }
   };
 
+  // --- MAIN LOGIC TO CHECK IF EVENT IS PAST (DATE + TIME) ---
+  const isEventExpired = (event) => {
+    if (!event.fullDate) return false;
+    
+    const eventDate = getEventDate(event);
+    const now = new Date();
+
+    // 1. Strictly Before Today (Yesterday, etc.)
+    if (isBefore(eventDate, startOfDay(now))) {
+      return true;
+    }
+
+    // 2. Strictly After Today (Tomorrow, etc.)
+    if (isBefore(startOfDay(now), eventDate)) {
+      return false;
+    }
+
+    // 3. Is TODAY - Check Time
+    if (isSameDay(eventDate, now)) {
+      if (!event.time) return false; // No time provided? Assume upcoming for today.
+
+      try {
+        const timeString = event.time.trim();
+        const timeFormats = ['h:mm aa', 'hh:mm aa', 'HH:mm', 'h:mm a', 'h:mma', 'h:mm'];
+        
+        for (const fmt of timeFormats) {
+          const result = parse(timeString, fmt, eventDate);
+          if (!isNaN(result.getTime())) {
+             // If Parsed Time < Now => Expired
+             return isBefore(result, now);
+          }
+        }
+      } catch (e) {
+        return false;
+      }
+    }
+
+    return false;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -139,52 +175,14 @@ const EventsPage = () => {
         const eventsData = eventsRes.data;
         setAllEvents(eventsData);
         
-        // CHANGE 2: Updated logic to check TIME for today's events
-        const now = new Date();
-        const todayStart = startOfDay(now);
-
         const upcoming = [];
         const past = [];
 
         eventsData.forEach((event) => {
-          const eventDate = getEventDate(event);
-          let isEventPast = false;
+          // Use the robust logic function
+          const isPast = isEventExpired(event);
 
-          // Condition 1: Date is strictly before today (Yesterday or older)
-          if (isBefore(eventDate, todayStart)) {
-            isEventPast = true;
-          } 
-          // Condition 2: Date is TODAY, check the specific Time
-          else if (isSameDay(eventDate, now)) {
-            if (event.time) {
-              try {
-                // Try to parse different time formats
-                const timeFormats = ['h:mm aa', 'hh:mm aa', 'HH:mm', 'h:mm a', 'h:mma', 'h:mm'];
-                let parsedDateTime = null;
-                const timeString = event.time.trim();
-
-                for (const fmt of timeFormats) {
-                  const result = parse(timeString, fmt, eventDate);
-                  if (!isNaN(result.getTime())) {
-                    parsedDateTime = result;
-                    break;
-                  }
-                }
-
-                if (parsedDateTime) {
-                  // If the parsed time is before NOW, it's past
-                  if (isBefore(parsedDateTime, now)) {
-                    isEventPast = true;
-                  }
-                }
-              } catch (e) {
-                console.log("Time parsing error for event:", event.title, e);
-                // If parsing fails, keep it as upcoming by default for today
-              }
-            }
-          }
-
-          if (isEventPast) {
+          if (isPast) {
             let images = event.galleryImages || [];
             if (typeof images === 'string') {
               try { images = JSON.parse(images); } catch (e) { images = []; }
@@ -352,8 +350,17 @@ const EventsPage = () => {
               const hasEvent = dayEvents.length > 0;
               const isCurrentMonth = isSameMonth(day, currentCalendarDate);
               const isToday = isSameDay(day, new Date());
-              const isPastDay = isBefore(day, startOfDay(new Date()));
               const isSelected = selectedDate && isSameDay(day, selectedDate);
+              
+              // --- Calendar specific Logic: Check if ALL events on this day are past ---
+              let isPastDay = false;
+              if (isBefore(day, startOfDay(new Date()))) {
+                isPastDay = true;
+              } else if (isToday && hasEvent) {
+                  // If it's today, check if every single event has expired
+                  const allExpired = dayEvents.every(ev => isEventExpired(ev));
+                  if(allExpired) isPastDay = true;
+              }
 
               return (
                 <div key={i} className="relative group aspect-square flex items-center justify-center">
@@ -366,15 +373,15 @@ const EventsPage = () => {
                         ${isToday && !isSelected ? "border border-saffron font-bold text-saffron" : ""}
                         ${hasEvent
                         ? isPastDay
-                          ? "bg-gray-400 text-white font-medium hover:bg-gray-500 shadow-sm"
-                          : "bg-saffron text-white font-bold hover:bg-saffron/90 shadow-sm"
+                          ? "bg-gray-400 text-white font-medium hover:bg-gray-500 shadow-sm" // GRAY if Past
+                          : "bg-saffron text-white font-bold hover:bg-saffron/90 shadow-sm"  // SAFFRON if Upcoming
                         : "hover:bg-muted"
                       }
                       `}
                   >
                     {format(day, "d")}
                   </button>
-                  {/* Tooltip for desktop only */}
+                  {/* Tooltip */}
                   {hasEvent && (
                     <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 hidden md:group-hover:block w-max max-w-[150px]">
                       <div className="bg-secondary text-secondary-foreground text-[10px] rounded p-2 shadow-lg border border-gold/20">
@@ -513,10 +520,6 @@ const EventsPage = () => {
                     )}
                   </div>
                 </div>
-
-                {/* --- MOBILE ONLY: DARSHAN TIMINGS SEPARATED FROM CALENDAR --- */}
-                {/* Placed immediately after the Upcoming Events Header, before the List */}
-               
 
                 {loading ? (
                   <div className="flex justify-center py-20"><Loader2 className="animate-spin h-10 w-10 text-saffron" /></div>
