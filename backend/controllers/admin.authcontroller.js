@@ -3,24 +3,29 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 const checkIfEventIsPast = (dateString, timeString) => {
-  if (!dateString || !timeString) return false;
+  if (!dateString) return false;
 
   try {
-    // 1. Create a Date object for the Event
-    // dateString format from frontend: "YYYY-MM-DD"
-    // timeString format from HTML5 input: "HH:mm" (24-hour format)
+    const now = new Date();
     
-    // Combine them into an ISO-like string for parsing
+    // Agar time nahi hai, toh sirf date check karo (end of that day mana jayega)
+    if (!timeString) {
+      const eventDate = new Date(dateString);
+      // Agar eventDate (00:00) aaj se purani hai
+      return eventDate < new Date(now.toDateString());
+    }
+
+    // Date aur Time combine karke object banao
+    // dateString: "2026-02-11", timeString: "20:10" -> "2026-02-11T20:10:00"
     const eventDateTimeString = `${dateString}T${timeString}:00`;
     const eventDate = new Date(eventDateTimeString);
-    const now = new Date();
 
-    // Check if the date is valid
     if (isNaN(eventDate.getTime())) {
-      console.error("Invalid Date/Time format:", eventDateTimeString);
+      console.error("Invalid Date/Time:", eventDateTimeString);
       return false; 
     }
 
+    // Comparison: Agar Event Time < Abhi ka Time
     return eventDate < now;
   } catch (error) {
     console.error("Time parsing error:", error);
@@ -150,13 +155,15 @@ export const addEvent = async (req, res) => {
     const { fullDate, time } = req.body;
     let eventData = { ...req.body };
 
+    
     const isPast = checkIfEventIsPast(fullDate, time);
 
+    
     if (isPast && req.files && req.files.length > 0) {
-      // CHANGE: Use file.path for Cloudinary URL
-      const images = req.files.map(file => file.path);
+      const images = req.files.map(file => file.path); // Cloudinary Path
       eventData.galleryImages = JSON.stringify(images); 
     } else {
+      // Future event hai toh images empty rakho
       eventData.galleryImages = JSON.stringify([]);
     }
 
@@ -178,14 +185,15 @@ export const updateEvent = async (req, res) => {
 
     let updateData = { ...req.body };
 
-    // Check strict past status logic for images
-    const isPast = checkIfEventIsPast(fullDate || existingEvent.fullDate, time || existingEvent.time);
+    // Check with new data OR existing data
+    const dateToCheck = fullDate || existingEvent.fullDate;
+    const timeToCheck = time || existingEvent.time;
+
+    const isPast = checkIfEventIsPast(dateToCheck, timeToCheck);
 
     if (req.files && req.files.length > 0) {
         if(isPast) {
-            // CHANGE: Use file.path for Cloudinary URL
             const newImages = req.files.map(file => file.path);
-            
             let currentImages = [];
             try {
                 currentImages = existingEvent.galleryImages ? JSON.parse(existingEvent.galleryImages) : [];
@@ -194,6 +202,7 @@ export const updateEvent = async (req, res) => {
 
             updateData.galleryImages = JSON.stringify([...currentImages, ...newImages]);
         } else {
+             // Agar future event ke liye photo bhej raha hai toh delete mat karo, bas new add mat karo
              delete updateData.galleryImages; 
         }
     }
