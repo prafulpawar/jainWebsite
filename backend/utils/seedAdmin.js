@@ -6,7 +6,7 @@ import sequelize from '../config/db.js';
 const seedAdmin = async () => {
     try {
         const username = "admin";
-        const password = "securePassword123"; // Change this
+        const password = "admin"; // Change this
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);

@@ -64,30 +64,30 @@ export const adminLogout = (req, res) => {
   res.json({ message: 'Logout successful' });
 };
 
-export const addEvent = async (req, res) => {
-  try {
-    const { fullDate, time } = req.body;
-    let eventData = { ...req.body };
+// export const addEvent = async (req, res) => {
+//   try {
+//     const { fullDate, time } = req.body;
+//     let eventData = { ...req.body };
 
-    // Check if past
-    const isPast = checkIfEventIsPast(fullDate, time);
+//     // Check if past
+//     const isPast = checkIfEventIsPast(fullDate, time);
 
-    // Logic: Only allow saving images if the event is strictly in the PAST.
-    if (isPast && req.files && req.files.length > 0) {
-      const images = req.files.map(file => `/uploads/${file.filename}`);
-      eventData.galleryImages = JSON.stringify(images); 
-    } else {
-      // Future events shouldn't have gallery images yet
-      eventData.galleryImages = JSON.stringify([]);
-    }
+//     // Logic: Only allow saving images if the event is strictly in the PAST.
+//     if (isPast && req.files && req.files.length > 0) {
+//       const images = req.files.map(file => `/uploads/${file.filename}`);
+//       eventData.galleryImages = JSON.stringify(images); 
+//     } else {
+//       // Future events shouldn't have gallery images yet
+//       eventData.galleryImages = JSON.stringify([]);
+//     }
 
-    const event = await Event.create(eventData);
-    res.status(201).json({ message: 'Event added', event });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
-  }
-};
+//     const event = await Event.create(eventData);
+//     res.status(201).json({ message: 'Event added', event });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 
 export const getEvents = async (req, res) => {
   try {
@@ -96,6 +96,74 @@ export const getEvents = async (req, res) => {
     });
     res.json(events);
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// export const updateEvent = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const { fullDate, time } = req.body;
+
+//     const existingEvent = await Event.findOne({ where: { id } });
+//     if (!existingEvent) return res.status(404).json({ message: 'Event not found' });
+
+//     let updateData = { ...req.body };
+
+//     // Check strict past status logic for images
+//     // Note: We check the NEW date/time being submitted
+//     const isPast = checkIfEventIsPast(fullDate || existingEvent.fullDate, time || existingEvent.time);
+
+//     if (req.files && req.files.length > 0) {
+//         if(isPast) {
+//             const newImages = req.files.map(file => `/uploads/${file.filename}`);
+            
+//             // Parse existing images
+//             let currentImages = [];
+//             try {
+//                 currentImages = existingEvent.galleryImages ? JSON.parse(existingEvent.galleryImages) : [];
+//                 if (!Array.isArray(currentImages)) currentImages = [];
+//             } catch (e) { currentImages = []; }
+
+//             // Combine old and new
+//             updateData.galleryImages = JSON.stringify([...currentImages, ...newImages]);
+//         } else {
+//             // If user somehow sends files for a future event, ignore them
+//             // Keep existing images (if any) or do nothing
+//              delete updateData.galleryImages; 
+//         }
+//     }
+
+//     await Event.update(updateData, { where: { id } });
+//     const updatedEvent = await Event.findByPk(id); // Fetch fresh data
+    
+//     res.status(200).json({ message: 'Event updated successfully', event: updatedEvent });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+
+export const addEvent = async (req, res) => {
+  try {
+    const { fullDate, time } = req.body;
+    let eventData = { ...req.body };
+
+    const isPast = checkIfEventIsPast(fullDate, time);
+
+    if (isPast && req.files && req.files.length > 0) {
+      // CHANGE: Use file.path for Cloudinary URL
+      const images = req.files.map(file => file.path);
+      eventData.galleryImages = JSON.stringify(images); 
+    } else {
+      eventData.galleryImages = JSON.stringify([]);
+    }
+
+    const event = await Event.create(eventData);
+    res.status(201).json({ message: 'Event added', event });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -111,31 +179,27 @@ export const updateEvent = async (req, res) => {
     let updateData = { ...req.body };
 
     // Check strict past status logic for images
-    // Note: We check the NEW date/time being submitted
     const isPast = checkIfEventIsPast(fullDate || existingEvent.fullDate, time || existingEvent.time);
 
     if (req.files && req.files.length > 0) {
         if(isPast) {
-            const newImages = req.files.map(file => `/uploads/${file.filename}`);
+            // CHANGE: Use file.path for Cloudinary URL
+            const newImages = req.files.map(file => file.path);
             
-            // Parse existing images
             let currentImages = [];
             try {
                 currentImages = existingEvent.galleryImages ? JSON.parse(existingEvent.galleryImages) : [];
                 if (!Array.isArray(currentImages)) currentImages = [];
             } catch (e) { currentImages = []; }
 
-            // Combine old and new
             updateData.galleryImages = JSON.stringify([...currentImages, ...newImages]);
         } else {
-            // If user somehow sends files for a future event, ignore them
-            // Keep existing images (if any) or do nothing
              delete updateData.galleryImages; 
         }
     }
 
     await Event.update(updateData, { where: { id } });
-    const updatedEvent = await Event.findByPk(id); // Fetch fresh data
+    const updatedEvent = await Event.findByPk(id);
     
     res.status(200).json({ message: 'Event updated successfully', event: updatedEvent });
   } catch (error) {
@@ -143,7 +207,6 @@ export const updateEvent = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 export const deleteEvent = async (req, res) => {
   try {
     const { id } = req.params;
@@ -259,13 +322,39 @@ export const getArticles = async (req, res) => {
   }
 };
 
+// export const addArticle = async (req, res) => {
+//   try {
+//     const { title, author, date, excerpt, externalLink } = req.body;
+    
+//     let imagePath = null;
+//     if (req.file) {
+//       imagePath = `/uploads/${req.file.filename}`;
+//     }
+
+//     const newArticle = await Article.create({
+//       title,
+//       author,
+//       date,
+//       excerpt,
+//       externalLink,
+//       image: imagePath
+//     });
+
+//     res.status(201).json({ message: 'Article added successfully', article: newArticle });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+
 export const addArticle = async (req, res) => {
   try {
     const { title, author, date, excerpt, externalLink } = req.body;
     
     let imagePath = null;
+    // CHANGE: Use req.file.path
     if (req.file) {
-      imagePath = `/uploads/${req.file.filename}`;
+      imagePath = req.file.path; 
     }
 
     const newArticle = await Article.create({
@@ -274,7 +363,7 @@ export const addArticle = async (req, res) => {
       date,
       excerpt,
       externalLink,
-      image: imagePath
+      image: imagePath // This is now a full URL (https://res.cloudinary.com/...)
     });
 
     res.status(201).json({ message: 'Article added successfully', article: newArticle });
@@ -328,21 +417,43 @@ export const getVideos = async (req, res) => {
   }
 };
 
+// export const addVideo = async (req, res) => {
+//   try {
+//     const { title, speaker, duration, videoLink } = req.body;
+
+//     let thumbnailPath = null;
+//     // We only process the image thumbnail here
+//     if (req.file) {
+//       thumbnailPath = `/uploads/${req.file.filename}`;
+//     }
+
+//     const newVideo = await Video.create({
+//       title,
+//       speaker,
+//       videoLink,
+//       thumbnail: thumbnailPath
+//     });
+
+//     res.status(201).json({ message: 'Video resource added', video: newVideo });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 export const addVideo = async (req, res) => {
   try {
     const { title, speaker, duration, videoLink } = req.body;
 
     let thumbnailPath = null;
-    // We only process the image thumbnail here
+    // CHANGE: Use req.file.path
     if (req.file) {
-      thumbnailPath = `/uploads/${req.file.filename}`;
+      thumbnailPath = req.file.path;
     }
 
     const newVideo = await Video.create({
       title,
       speaker,
       videoLink,
-      thumbnail: thumbnailPath
+      thumbnail: thumbnailPath // This is now a full URL
     });
 
     res.status(201).json({ message: 'Video resource added', video: newVideo });
@@ -350,7 +461,6 @@ export const addVideo = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 export const toggleVideoFeature = async (req, res) => {
   try {
     const { id } = req.params;
