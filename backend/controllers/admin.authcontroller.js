@@ -155,7 +155,6 @@ export const deleteEvent = async (req, res) => {
   }
 };
 
-
 export const addDarshanTiming = async (req, res) => {
   try {
     const timing = await Darshan.create(req.body);
