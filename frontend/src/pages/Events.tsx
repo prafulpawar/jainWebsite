@@ -10,10 +10,11 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import api from "@/utils/api";
+// CHANGE 1: Added 'parse' to imports
 import {
   isBefore, parseISO, startOfDay, startOfMonth, endOfMonth,
   startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth,
-  isSameDay, addMonths, subMonths, format
+  isSameDay, addMonths, subMonths, format, parse
 } from "date-fns";
 
 const typeColors = {
@@ -137,14 +138,53 @@ const EventsPage = () => {
 
         const eventsData = eventsRes.data;
         setAllEvents(eventsData);
-        const today = startOfDay(new Date());
+        
+        // CHANGE 2: Updated logic to check TIME for today's events
+        const now = new Date();
+        const todayStart = startOfDay(now);
 
         const upcoming = [];
         const past = [];
 
         eventsData.forEach((event) => {
           const eventDate = getEventDate(event);
-          if (isBefore(eventDate, today)) {
+          let isEventPast = false;
+
+          // Condition 1: Date is strictly before today (Yesterday or older)
+          if (isBefore(eventDate, todayStart)) {
+            isEventPast = true;
+          } 
+          // Condition 2: Date is TODAY, check the specific Time
+          else if (isSameDay(eventDate, now)) {
+            if (event.time) {
+              try {
+                // Try to parse different time formats
+                const timeFormats = ['h:mm aa', 'hh:mm aa', 'HH:mm', 'h:mm a', 'h:mma', 'h:mm'];
+                let parsedDateTime = null;
+                const timeString = event.time.trim();
+
+                for (const fmt of timeFormats) {
+                  const result = parse(timeString, fmt, eventDate);
+                  if (!isNaN(result.getTime())) {
+                    parsedDateTime = result;
+                    break;
+                  }
+                }
+
+                if (parsedDateTime) {
+                  // If the parsed time is before NOW, it's past
+                  if (isBefore(parsedDateTime, now)) {
+                    isEventPast = true;
+                  }
+                }
+              } catch (e) {
+                console.log("Time parsing error for event:", event.title, e);
+                // If parsing fails, keep it as upcoming by default for today
+              }
+            }
+          }
+
+          if (isEventPast) {
             let images = event.galleryImages || [];
             if (typeof images === 'string') {
               try { images = JSON.parse(images); } catch (e) { images = []; }

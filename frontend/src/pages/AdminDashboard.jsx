@@ -50,6 +50,19 @@ const getTypeColor = (typeName) => {
 };
 
 const IMAGE_BASE_URL = "http://localhost:5000";
+
+// --- NEW HELPER FUNCTION TO FIX IMAGES ---
+const getImageUrl = (path) => {
+  if (!path) return "";
+  // Agar path http ya https se shuru hota hai (Cloudinary), to direct path return karo
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+  // Nahi to Localhost URL add karo (Purani images ke liye)
+  return `${IMAGE_BASE_URL}${path}`;
+};
+// ----------------------------------------
+
 const ITEMS_PER_PAGE = 4;
 
 const AdminDashboard = () => {
@@ -621,8 +634,8 @@ const AdminDashboard = () => {
                       {previewImages.length > 0 && (
                         <div className="grid grid-cols-4 gap-2 mb-2">
                           {previewImages.map((img, idx) => (
-                            <a key={idx} href={`${IMAGE_BASE_URL}${img}`} target="_blank" rel="noreferrer" className="block relative group">
-                              <img src={`${IMAGE_BASE_URL}${img}`} alt="Gallery" className="w-full h-12 object-cover rounded border border-gray-200" />
+                            <a key={idx} href={getImageUrl(img)} target="_blank" rel="noreferrer" className="block relative group">
+                              <img src={getImageUrl(img)} alt="Gallery" className="w-full h-12 object-cover rounded border border-gray-200" />
                             </a>
                           ))}
                         </div>
@@ -908,7 +921,7 @@ const AdminDashboard = () => {
                         <div key={article.id} className={cn("flex gap-4 p-4 hover:bg-white transition-colors", article.isFeatured && "bg-yellow-50/50")}>
                           <div className="w-24 h-24 bg-gray-200 rounded-md overflow-hidden flex-shrink-0 border">
                             {article.image ? (
-                              <img src={`${IMAGE_BASE_URL}${article.image}`} alt={article.title} className="w-full h-full object-cover" />
+                              <img src={getImageUrl(article.image)} alt={article.title} className="w-full h-full object-cover" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-gray-400"><BookOpen className="w-8 h-8" /></div>
                             )}
@@ -964,7 +977,7 @@ const AdminDashboard = () => {
                         <div key={video.id} className={cn("flex gap-4 p-4 hover:bg-white transition-colors", video.isFeatured && "bg-yellow-50/50")}>
                           <div className="w-32 h-20 bg-black rounded-md overflow-hidden flex-shrink-0 relative group">
                             {video.thumbnail ? (
-                              <img src={`${IMAGE_BASE_URL}${video.thumbnail}`} alt={video.title} className="w-full h-full object-cover opacity-80" />
+                              <img src={getImageUrl(video.thumbnail)} alt={video.title} className="w-full h-full object-cover opacity-80" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-gray-500"><Video className="w-8 h-8" /></div>
                             )}
