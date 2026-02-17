@@ -39,11 +39,11 @@ export function Footer() {
           {/* About */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-saffron to-gold flex items-center justify-center">
+              <div className="w-24 h-24 rounded-full  flex items-center justify-center">
                             <img 
               src={logoJain} 
               alt="JSOT Logo" 
-              className="w-12 h-12 rounded-full object-cover shadow-lg border border-gold/20" 
+              className="w-26 h-26 rounded-full object-cover shadow-lg border border-gold/20" 
             />
 
               </div>

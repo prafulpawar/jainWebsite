@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Facebook, Instagram, Youtube, Sun, Moon, Calendar, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import logoJain from "@/assets/logoJain.jpg";
-import SunCalc from "suncalc";
 import api from '@/utils/api';
 
 const navItems = [
@@ -22,7 +20,6 @@ const navItems = [
   {
     name: "Events",
     href: "/events",
-    // Added Submenu for Events here
     submenu: [
       { name: "Upcoming Events", href: "/events#upcoming" },
       { name: "Calendar", href: "/events#calendar" },
@@ -30,77 +27,73 @@ const navItems = [
       { name: "Past Events Gallery", href: "/events#past" },
     ]
   },
-  { name: "Resources", href: "/resources" },
-  // { name: "Contact", href: "/contact" },
+  {
+    name: "Resources",
+    href: "/resources",
+    // --- ADDED RESOURCES SUBMENU HERE ---
+    submenu: [
+      { name: "Project 441 Ellesmere", href: "/resources#441-ellesmere" },
+      { name: "Articles", href: "/resources#articles" },
+      { name: "Videos", href: "/resources#videos" },
+      { name: "Newsletter", href: "/resources#subscribe-to-newsletter" },
+    ]
+  },
   { name: "Visitors", href: '/Visitor' }
 ];
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  // State to track which mobile submenu is open
-  const [mobileSubmenuOpen, setMobileSubmenuOpen] = useState<string | null>(null);
-
+  const [mobileSubmenuOpen, setMobileSubmenuOpen] = useState(null);
   const location = useLocation();
 
-  const isExternalLink = (href: string) => href.startsWith("#");
+  const isExternalLink = (href) => href.startsWith("#");
 
-  const toggleMobileSubmenu = (name: string) => {
+  const toggleMobileSubmenu = (name) => {
     setMobileSubmenuOpen(mobileSubmenuOpen === name ? null : name);
   };
 
-  
-
   const [panchang, setPanchang] = useState({
-    tithi: "",
-    navkarsi: "",
-    chovihar: "",
+    tithi: "Loading...",
+    navkarsi: "--:--",
+    chovihar: "--:--",
   });
 
   useEffect(() => {
     const fetchPanchangData = async () => {
-       const todayObj = new Date();
-        const dateKey = todayObj.toISOString().split("T")[0]; 
-
-        // 2. Fetch Tithi from YOUR Backend using your Axios 'api' instance
-        // This automatically uses the baseURL: http://localhost:5000/api
-        const response = await api.get('/panchang-2025');
-        const panchangList = response.data; // Axios returns data inside .data
-           console.log(panchangList)
-        // Find the object that matches today's date
-        const todayData = panchangList.find(item => item.date === dateKey);
-        const currentTithi = todayData ? todayData.tithi : "Data Not Found";
-
-
       try {
-         
+        const todayObj = new Date();
+        const dateKey = todayObj.toISOString().split("T")[0];
 
+        // 1. Fetch Tithi from Backend
+        const response = await api.get('/panchang-2025');
+        const panchangList = response.data;
+        
+        // Find today's data
+        const todayData = panchangList.find(item => item.date === dateKey);
+        const currentTithi = todayData ? todayData.tithi : "";
+
+        // 2. Fetch Sun Data for Navkarsi/Chovihar
         const torontoDate = new Date().toLocaleDateString("en-CA", {
           timeZone: "America/Toronto",
         });
 
-        const response = await fetch(
+        const sunResponse = await fetch(
           `https://api.sunrise-sunset.org/json?lat=43.6532&lng=-79.3832&date=${torontoDate}&formatted=0`
         );
-        // const response = await fetch(
-        //   "https://api.sunrise-sunset.org/json?lat=43.6532&lng=-79.3832&date=today&formatted=0"
-        // );
-        const data = await response.json();
+        const data = await sunResponse.json();
 
         if (data.status === "OK") {
-          // API returns UTC time
           const sunriseTime = new Date(data.results.sunrise);
           const sunsetTime = new Date(data.results.sunset);
 
           // Navkarsi = Sunrise + 48 mins
           const navkarsiTime = new Date(sunriseTime.getTime() + 48 * 60000);
-
           // Chovihar = Sunset
           const choviharTime = sunsetTime;
 
-          // 👇 FIX: Toronto Timezone Formatting Function
           const formatTorontoTime = (date) => {
             return date.toLocaleTimeString("en-US", {
-              timeZone: "America/Toronto", // Forces Toronto Time
+              timeZone: "America/Toronto",
               hour: "2-digit",
               minute: "2-digit",
               hour12: true,
@@ -109,20 +102,20 @@ export function Header() {
 
           setPanchang({
             tithi: currentTithi,
-            navkarsi: formatTorontoTime(navkarsiTime), // Corrected
-            chovihar: formatTorontoTime(choviharTime), // Corrected
+            navkarsi: formatTorontoTime(navkarsiTime),
+            chovihar: formatTorontoTime(choviharTime),
           });
+        } else {
+           setPanchang(prev => ({ ...prev, tithi: currentTithi }));
         }
       } catch (error) {
-        console.error("Failed to fetch sun times:", error);
-        setPanchang(prev => ({ ...prev, tithi: currentTithi }));
+        console.error("Failed to fetch panchang data:", error);
+        setPanchang({ tithi: "Unavailable", navkarsi: "--:--", chovihar: "--:--" });
       }
     };
 
     fetchPanchangData();
   }, []);
-
-
 
   return (
     <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm shadow-md border-b-2 border-gold/30">
@@ -158,110 +151,78 @@ export function Header() {
           <div className="flex items-center gap-3">
             <span className="hidden lg:inline text-gold-light font-medium text-xs">॥ Jai Jinendra ॥</span>
             <div className="flex gap-2">
-              <a
-                href="https://www.facebook.com/jsotcanada/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Facebook"
-                className="hover:text-gold transition-colors"
-              >
+              <a href="https://www.facebook.com/jsotcanada/" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors">
                 <Facebook className="h-4 w-4" />
               </a>
-
-              <a
-                href="https://www.instagram.com/jainsocietyoftoronto/?hl=en"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="hover:text-gold transition-colors"
-              >
+              <a href="https://www.instagram.com/jainsocietyoftoronto/?hl=en" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors">
                 <Instagram className="h-4 w-4" />
               </a>
-
-              <a
-                href="https://www.youtube.com/@jainsocietyoftoronto-media131"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="YouTube"
-                className="hover:text-gold transition-colors"
-              >
+              <a href="https://www.youtube.com/@jainsocietyoftoronto-media131" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors">
                 <Youtube className="h-4 w-4" />
               </a>
             </div>
-
           </div>
         </div>
       </div>
 
       {/* Main Navigation */}
-      <nav className="container mx-auto px-4 py-3">
+      <nav className="container mx-auto px-4 py-2">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-saffron to-gold flex items-center justify-center shadow-lg">
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-105">
               <img
                 src={logoJain}
                 alt="JSOT Logo"
-                className="w-12 h-12 rounded-full object-cover shadow-lg border border-gold/20"
+                className="w-full h-full rounded-full object-cover shadow-lg border border-gold/20"
               />
             </div>
             <div className="flex flex-col">
-              <span className="font-serif text-xl font-bold text-secondary">JSOT</span>
-              <span className="text-xs text-muted-foreground">Jain Society of Toronto</span>
+              <span className="font-serif text-lg md:text-xl font-bold text-secondary">JSOT</span>
+              <span className="text-[10px] md:text-xs text-muted-foreground">Jain Society of Toronto</span>
             </div>
           </Link>
 
           {/* DESKTOP NAVIGATION */}
           <div className="hidden lg:flex items-center gap-1">
-            {navItems.map((item) => {
-              // Has Submenu?
-              if (item.submenu) {
-                return (
-                  <div key={item.name} className="relative group px-3 py-2">
-                    <button
+            {navItems.map((item) => (
+              <div key={item.name} className="relative group px-3 py-2">
+                {item.submenu ? (
+                  <>
+                    <Link
+                      to={item.href}
                       className="flex items-center gap-1 text-foreground hover:text-primary font-medium transition-colors focus:outline-none"
                     >
                       {item.name}
                       <ChevronDown className="w-4 h-4 transition-transform group-hover:rotate-180" />
-                    </button>
-
+                    </Link>
                     {/* Dropdown Menu */}
                     <div className="absolute left-0 top-full pt-2 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 z-50">
-                      <div className="bg-card border border-gold/20 rounded-lg shadow-xl overflow-hidden">
+                      <div className="bg-white border border-gold/20 rounded-lg shadow-xl overflow-hidden py-1">
                         {item.submenu.map((subItem) => (
                           <Link
                             key={subItem.name}
                             to={subItem.href}
-                            className="block px-4 py-3 text-sm text-foreground/80 hover:bg-gold/10 hover:text-primary transition-colors border-b border-border last:border-0"
+                            className="block px-4 py-3 text-sm text-foreground/80 hover:bg-gold/10 hover:text-primary transition-colors border-b border-gray-100 last:border-0"
                           >
                             {subItem.name}
                           </Link>
                         ))}
                       </div>
                     </div>
-                  </div>
-                );
-              }
-
-              // Normal Link
-              if (isExternalLink(item.href)) {
-                return (
-                  <a key={item.name} href={item.href} className="px-4 py-2 text-foreground hover:text-primary font-medium transition-colors">
+                  </>
+                ) : (
+                  <Link to={item.href} className="text-foreground hover:text-primary font-medium transition-colors">
                     {item.name}
-                  </a>
-                );
-              }
-              return (
-                <Link key={item.name} to={item.href} className="px-4 py-2 text-foreground hover:text-primary font-medium transition-colors">
-                  {item.name}
-                </Link>
-              );
-            })}
+                  </Link>
+                )}
+              </div>
+            ))}
           </div>
 
           {/* Donate Button & Hamburger */}
           <div className="flex items-center gap-3">
-            <Button variant="default" size="lg" className="hidden sm:flex bg-gold hover:bg-gold/80 text-black font-semibold">
+            <Button variant="default" size="default" className="hidden sm:flex bg-gold hover:bg-gold/80 text-black font-semibold">
               DONATE NOW
             </Button>
             <button
@@ -280,25 +241,33 @@ export function Header() {
             {navItems.map((item) => (
               <div key={item.name}>
                 {item.submenu ? (
-                  // Mobile Submenu Logic
                   <div>
-                    <button
-                      onClick={() => toggleMobileSubmenu(item.name)}
-                      className="flex items-center justify-between w-full py-2 text-foreground hover:text-primary font-medium"
-                    >
-                      {item.name}
-                      <ChevronDown
-                        className={`w-4 h-4 transition-transform ${mobileSubmenuOpen === item.name ? "rotate-180" : ""}`}
-                      />
-                    </button>
+                    <div className="flex items-center justify-between w-full py-2 text-foreground hover:text-primary font-medium cursor-pointer">
+                      <Link 
+                        to={item.href} 
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex-1"
+                      >
+                         {item.name}
+                      </Link>
+                      <button 
+                         onClick={(e) => {
+                           e.preventDefault();
+                           toggleMobileSubmenu(item.name);
+                         }}
+                         className="p-2"
+                      >
+                        <ChevronDown className={`w-4 h-4 transition-transform ${mobileSubmenuOpen === item.name ? "rotate-180" : ""}`} />
+                      </button>
+                    </div>
 
                     {mobileSubmenuOpen === item.name && (
-                      <div className="pl-4 space-y-1 border-l-2 border-gold/20 ml-2 mb-2">
+                      <div className="pl-4 space-y-1 border-l-2 border-gold/20 ml-2 mb-2 bg-muted/20 rounded-r-md">
                         {item.submenu.map((subItem) => (
                           <Link
                             key={subItem.name}
                             to={subItem.href}
-                            className="block py-2 text-sm text-muted-foreground hover:text-primary"
+                            className="block py-2 px-2 text-sm text-muted-foreground hover:text-primary hover:bg-gold/10 rounded"
                             onClick={() => setIsMobileMenuOpen(false)}
                           >
                             {subItem.name}
@@ -308,7 +277,6 @@ export function Header() {
                     )}
                   </div>
                 ) : (
-                  // Mobile Standard Link
                   <Link
                     to={item.href}
                     className="block py-2 text-foreground hover:text-primary font-medium"
@@ -319,7 +287,7 @@ export function Header() {
                 )}
               </div>
             ))}
-            <Button className="w-full mt-4 bg-gold hover:bg-gold/80 text-black">
+            <Button className="w-full mt-4 bg-gold hover:bg-gold/80 text-black font-bold">
               DONATE NOW
             </Button>
           </div>

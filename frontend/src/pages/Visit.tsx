@@ -232,9 +232,15 @@ const Visit = () => {
                 </div>
 
                 <div className="pt-4">
-                  <Button className="w-full bg-secondary text-white hover:bg-secondary/90 gap-2">
-                    <Navigation className="w-4 h-4" /> Get Driving Directions
-                  </Button>
+                <a 
+                    href="https://www.google.com/maps/dir/?api=1&destination=Jain+Society+of+Toronto,+441+Ellesmere+Rd,+Scarborough,+ON+M1R+4E5" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    <Button className="w-full bg-secondary text-white hover:bg-secondary/90 gap-2">
+                      <Navigation className="w-4 h-4" /> Get Driving Directions
+                    </Button>
+                  </a>
                 </div>
               </CardContent>
             </Card>
