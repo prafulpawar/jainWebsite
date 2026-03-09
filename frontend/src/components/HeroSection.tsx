@@ -3,9 +3,9 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 // Import images
-import heroTemple from "@/assets/hero-temple.jpg";
-import heroCommunity from "@/assets/hero-community.jpg";
-import heroPuja from "@/assets/hero-puja.webp";
+import heroTemple from "@/assets/DSC01301.jpg";
+import heroCommunity from "@/assets/DSC01311.jpg";
+import heroPuja from "@/assets/DSC01316.jpg";
 // 1. Import the PDF file here
 import membershipPdf from "@/assets/pdf/JSOT-Member-Application-Form-2020-Janv2.pdf";
 
@@ -16,8 +16,8 @@ const slides = [
     subtitle: "Preserving Values, Uniting Community",
     cta: "Join Our Community",
     // 2. Use the imported PDF variable and add an 'isExternal' flag
-    link: membershipPdf, 
-    isExternal: true 
+    link: membershipPdf,
+    isExternal: true
   },
   {
     image: heroCommunity,
@@ -57,53 +57,49 @@ export function HeroSection() {
       {slides.map((slide, index) => (
         <div
           key={index}
-          className={`absolute inset-0 transition-opacity duration-1000 ${
-            index === currentSlide 
-              ? "opacity-100 z-10 pointer-events-auto" 
+          className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide
+              ? "opacity-100 z-10 pointer-events-auto"
               : "opacity-0 z-0 pointer-events-none"
-          }`}
+            }`}
         >
           <img
             src={slide.image}
             alt={slide.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-center"
           />
           {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-secondary/80 via-secondary/50 to-transparent" />
-          
+          <div className="absolute inset-0 bg-gradient-to-r from-secondary/10 via-secondary/10 to-transparent" />
+
           {/* Content */}
           <div className="absolute inset-0 flex items-center">
             <div className="container mx-auto px-4">
               <div className="max-w-2xl">
-                <h1 
-                  className={`font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-4 text-shadow transition-all duration-700 ${
-                    index === currentSlide ? "animate-fade-in-up" : ""
-                  }`}
+                <h1
+                  className={`font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-4 text-shadow transition-all duration-700 ${index === currentSlide ? "animate-fade-in-up" : ""
+                    }`}
                 >
                   {slide.title}
                 </h1>
-                <p 
-                  className={`text-xl md:text-2xl text-primary-foreground/90 mb-8 font-light transition-all duration-700 animation-delay-200 ${
-                    index === currentSlide ? "animate-fade-in-up" : ""
-                  }`}
+                <p
+                  className={`text-xl md:text-2xl text-primary-foreground/90 mb-8 font-light transition-all duration-700 animation-delay-200 ${index === currentSlide ? "animate-fade-in-up" : ""
+                    }`}
                 >
                   {slide.subtitle}
                 </p>
-                
+
                 {/* 3. Conditional Rendering: External (PDF) vs Internal (Router) */}
                 {slide.isExternal ? (
                   // External Link (For PDF)
-                  <a 
-                    href={slide.link} 
-                    target="_blank" 
+                  <a
+                    href={slide.link}
+                    target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Button 
-                      variant="gold" 
+                    <Button
+                      variant="gold"
                       size="xl"
-                      className={`transition-all duration-700 animation-delay-400 ${
-                        index === currentSlide ? "animate-fade-in-up" : ""
-                      }`}
+                      className={`transition-all duration-700 animation-delay-400 ${index === currentSlide ? "animate-fade-in-up" : ""
+                        }`}
                     >
                       {slide.cta}
                     </Button>
@@ -111,12 +107,11 @@ export function HeroSection() {
                 ) : (
                   // Internal Link (React Router)
                   <Link to={slide.link}>
-                    <Button 
-                      variant="gold" 
+                    <Button
+                      variant="gold"
                       size="xl"
-                      className={`transition-all duration-700 animation-delay-400 ${
-                        index === currentSlide ? "animate-fade-in-up" : ""
-                      }`}
+                      className={`transition-all duration-700 animation-delay-400 ${index === currentSlide ? "animate-fade-in-up" : ""
+                        }`}
                     >
                       {slide.cta}
                     </Button>
@@ -151,9 +146,8 @@ export function HeroSection() {
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all ${
-              index === currentSlide ? "bg-gold w-8" : "bg-card/50 hover:bg-card/80"
-            }`}
+            className={`w-3 h-3 rounded-full transition-all ${index === currentSlide ? "bg-gold w-8" : "bg-card/50 hover:bg-card/80"
+              }`}
             aria-label={`Go to slide ${index + 1}`}
           />
         ))}
