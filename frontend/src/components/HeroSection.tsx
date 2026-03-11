@@ -68,14 +68,14 @@ export function HeroSection() {
             className="w-full h-full object-cover object-center"
           />
           {/* Gradient Overlay */}
-          {/* <div className="absolute inset-0 bg-gradient-to-r from-secondary/10 via-secondary/10 to-transparent" /> */}
+          <div className="absolute inset-0 bg-gradient-to-r from-secondary/70 via-secondary/20 to-transparent" />
 
           {/* Content */}
           <div className="absolute inset-0 flex items-center">
             <div className="container mx-auto px-4">
               <div className="max-w-2xl">
                 <h1
-                  className={`font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-4 text-shadow transition-all duration-700 ${index === currentSlide ? "animate-fade-in-up" : ""
+                  className={`font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-[#ffffff] mb-4 text-shadow transition-all duration-700 ${index === currentSlide ? "animate-fade-in-up" : ""
                     }`}
                 >
                   {slide.title}
