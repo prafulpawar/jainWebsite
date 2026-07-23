@@ -8,15 +8,11 @@ const checkIfEventIsPast = (dateString, timeString) => {
   try {
     const now = new Date();
     
-    // Agar time nahi hai, toh sirf date check karo (end of that day mana jayega)
     if (!timeString) {
       const eventDate = new Date(dateString);
-      // Agar eventDate (00:00) aaj se purani hai
       return eventDate < new Date(now.toDateString());
     }
 
-    // Date aur Time combine karke object banao
-    // dateString: "2026-02-11", timeString: "20:10" -> "2026-02-11T20:10:00"
     const eventDateTimeString = `${dateString}T${timeString}:00`;
     const eventDate = new Date(eventDateTimeString);
 
@@ -25,7 +21,6 @@ const checkIfEventIsPast = (dateString, timeString) => {
       return false; 
     }
 
-    // Comparison: Agar Event Time < Abhi ka Time
     return eventDate < now;
   } catch (error) {
     console.error("Time parsing error:", error);
@@ -69,35 +64,10 @@ export const adminLogout = (req, res) => {
   res.json({ message: 'Logout successful' });
 };
 
-// export const addEvent = async (req, res) => {
-//   try {
-//     const { fullDate, time } = req.body;
-//     let eventData = { ...req.body };
-
-//     // Check if past
-//     const isPast = checkIfEventIsPast(fullDate, time);
-
-//     // Logic: Only allow saving images if the event is strictly in the PAST.
-//     if (isPast && req.files && req.files.length > 0) {
-//       const images = req.files.map(file => `/uploads/${file.filename}`);
-//       eventData.galleryImages = JSON.stringify(images); 
-//     } else {
-//       // Future events shouldn't have gallery images yet
-//       eventData.galleryImages = JSON.stringify([]);
-//     }
-
-//     const event = await Event.create(eventData);
-//     res.status(201).json({ message: 'Event added', event });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
 export const getEvents = async (req, res) => {
   try {
     const events = await Event.findAll({
-      order: [['fullDate', 'ASC']] // Order by date usually helps
+      order: [['fullDate', 'ASC']] 
     });
     res.json(events);
   } catch (error) {
@@ -105,65 +75,18 @@ export const getEvents = async (req, res) => {
   }
 };
 
-// export const updateEvent = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const { fullDate, time } = req.body;
-
-//     const existingEvent = await Event.findOne({ where: { id } });
-//     if (!existingEvent) return res.status(404).json({ message: 'Event not found' });
-
-//     let updateData = { ...req.body };
-
-//     // Check strict past status logic for images
-//     // Note: We check the NEW date/time being submitted
-//     const isPast = checkIfEventIsPast(fullDate || existingEvent.fullDate, time || existingEvent.time);
-
-//     if (req.files && req.files.length > 0) {
-//         if(isPast) {
-//             const newImages = req.files.map(file => `/uploads/${file.filename}`);
-            
-//             // Parse existing images
-//             let currentImages = [];
-//             try {
-//                 currentImages = existingEvent.galleryImages ? JSON.parse(existingEvent.galleryImages) : [];
-//                 if (!Array.isArray(currentImages)) currentImages = [];
-//             } catch (e) { currentImages = []; }
-
-//             // Combine old and new
-//             updateData.galleryImages = JSON.stringify([...currentImages, ...newImages]);
-//         } else {
-//             // If user somehow sends files for a future event, ignore them
-//             // Keep existing images (if any) or do nothing
-//              delete updateData.galleryImages; 
-//         }
-//     }
-
-//     await Event.update(updateData, { where: { id } });
-//     const updatedEvent = await Event.findByPk(id); // Fetch fresh data
-    
-//     res.status(200).json({ message: 'Event updated successfully', event: updatedEvent });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
-
 export const addEvent = async (req, res) => {
   try {
     const { fullDate, time } = req.body;
     let eventData = { ...req.body };
 
-    
     const isPast = checkIfEventIsPast(fullDate, time);
 
-    
     if (isPast && req.files && req.files.length > 0) {
-      const images = req.files.map(file => file.path); // Cloudinary Path
+      // FIX: Sirf folder name aur file name save karo database me
+      const images = req.files.map(file => 'uploads/' + file.filename); 
       eventData.galleryImages = JSON.stringify(images); 
     } else {
-      // Future event hai toh images empty rakho
       eventData.galleryImages = JSON.stringify([]);
     }
 
@@ -185,7 +108,6 @@ export const updateEvent = async (req, res) => {
 
     let updateData = { ...req.body };
 
-    // Check with new data OR existing data
     const dateToCheck = fullDate || existingEvent.fullDate;
     const timeToCheck = time || existingEvent.time;
 
@@ -193,7 +115,8 @@ export const updateEvent = async (req, res) => {
 
     if (req.files && req.files.length > 0) {
         if(isPast) {
-            const newImages = req.files.map(file => file.path);
+            // FIX: Sirf folder name aur file name save karo database me
+            const newImages = req.files.map(file => 'uploads/' + file.filename);
             let currentImages = [];
             try {
                 currentImages = existingEvent.galleryImages ? JSON.parse(existingEvent.galleryImages) : [];
@@ -202,7 +125,6 @@ export const updateEvent = async (req, res) => {
 
             updateData.galleryImages = JSON.stringify([...currentImages, ...newImages]);
         } else {
-             // Agar future event ke liye photo bhej raha hai toh delete mat karo, bas new add mat karo
              delete updateData.galleryImages; 
         }
     }
@@ -216,6 +138,7 @@ export const updateEvent = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 export const deleteEvent = async (req, res) => {
   try {
     const { id } = req.params;
@@ -245,8 +168,6 @@ export const getDarshanTimings = async (req, res) => {
   }
 };
 
-
-
 export const deleteDarshanTiming = async (req, res) => {
   try {
     const { id } = req.params;
@@ -261,7 +182,6 @@ export const deleteDarshanTiming = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 export const updateDarshanTiming = async (req, res) => {
   try {
@@ -285,14 +205,10 @@ export const getEventTypes = async (req, res) => {
   try {
     let types = await EventType.findAll();
     
-    // Optional: Seed default types if empty
     if (types.length === 0) {
       const defaults = [
-        { name: "Festival" },
-        { name: "Puja" },
-        { name: "Education" },
-        { name: "Celebration" },
-        { name: "Community" }
+        { name: "Festival" }, { name: "Puja" }, { name: "Education" },
+        { name: "Celebration" }, { name: "Community" }
       ];
       await EventType.bulkCreate(defaults);
       types = await EventType.findAll();
@@ -309,7 +225,6 @@ export const addEventType = async (req, res) => {
     const { name } = req.body;
     if (!name) return res.status(400).json({ message: "Name is required" });
 
-    // Check if exists (case insensitive)
     const existing = await EventType.findOne({ where: { name } });
     if (existing) return res.status(400).json({ message: "Type already exists" });
 
@@ -331,39 +246,14 @@ export const getArticles = async (req, res) => {
   }
 };
 
-// export const addArticle = async (req, res) => {
-//   try {
-//     const { title, author, date, excerpt, externalLink } = req.body;
-    
-//     let imagePath = null;
-//     if (req.file) {
-//       imagePath = `/uploads/${req.file.filename}`;
-//     }
-
-//     const newArticle = await Article.create({
-//       title,
-//       author,
-//       date,
-//       excerpt,
-//       externalLink,
-//       image: imagePath
-//     });
-
-//     res.status(201).json({ message: 'Article added successfully', article: newArticle });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
-
 export const addArticle = async (req, res) => {
   try {
     const { title, author, date, excerpt, externalLink } = req.body;
     
     let imagePath = null;
-    // CHANGE: Use req.file.path
     if (req.file) {
-      imagePath = req.file.path; 
+      // FIX: Sirf folder name aur file name save karo database me
+      imagePath = 'uploads/' + req.file.filename; 
     }
 
     const newArticle = await Article.create({
@@ -372,7 +262,7 @@ export const addArticle = async (req, res) => {
       date,
       excerpt,
       externalLink,
-      image: imagePath // This is now a full URL (https://res.cloudinary.com/...)
+      image: imagePath 
     });
 
     res.status(201).json({ message: 'Article added successfully', article: newArticle });
@@ -388,7 +278,6 @@ export const toggleArticleFeature = async (req, res) => {
 
     if (!article) return res.status(404).json({ error: "Article not found" });
 
-    // If currently FALSE, we want to make it TRUE. Check limit first.
     if (!article.isFeatured) {
       const count = await Article.count({ where: { isFeatured: true } });
       if (count >= 3) {
@@ -426,43 +315,21 @@ export const getVideos = async (req, res) => {
   }
 };
 
-// export const addVideo = async (req, res) => {
-//   try {
-//     const { title, speaker, duration, videoLink } = req.body;
-
-//     let thumbnailPath = null;
-//     // We only process the image thumbnail here
-//     if (req.file) {
-//       thumbnailPath = `/uploads/${req.file.filename}`;
-//     }
-
-//     const newVideo = await Video.create({
-//       title,
-//       speaker,
-//       videoLink,
-//       thumbnail: thumbnailPath
-//     });
-
-//     res.status(201).json({ message: 'Video resource added', video: newVideo });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
 export const addVideo = async (req, res) => {
   try {
     const { title, speaker, duration, videoLink } = req.body;
 
     let thumbnailPath = null;
-    // CHANGE: Use req.file.path
     if (req.file) {
-      thumbnailPath = req.file.path;
+      // FIX: Sirf folder name aur file name save karo database me
+      thumbnailPath = 'uploads/' + req.file.filename;
     }
 
     const newVideo = await Video.create({
       title,
       speaker,
       videoLink,
-      thumbnail: thumbnailPath // This is now a full URL
+      thumbnail: thumbnailPath
     });
 
     res.status(201).json({ message: 'Video resource added', video: newVideo });
@@ -470,6 +337,7 @@ export const addVideo = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 export const toggleVideoFeature = async (req, res) => {
   try {
     const { id } = req.params;
@@ -477,7 +345,6 @@ export const toggleVideoFeature = async (req, res) => {
 
     if (!video) return res.status(404).json({ error: "Video not found" });
 
-    // If currently FALSE, check limit before enabling
     if (!video.isFeatured) {
       const count = await Video.count({ where: { isFeatured: true } });
       if (count >= 3) {

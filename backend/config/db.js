@@ -1,10 +1,5 @@
 import { Sequelize } from 'sequelize';
-console.log({
-  DB_HOST: process.env.DB_HOST,
-  DB_USER: process.env.DB_USER,
-  DB_PASS: process.env.DB_PASS,
-  DB_NAME: process.env.DB_NAME,
-});
+
 
 const sequelize = new Sequelize(
     process.env.DB_NAME,

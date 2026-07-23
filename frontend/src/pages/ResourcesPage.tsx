@@ -23,6 +23,10 @@ import { format } from "date-fns";
 import exteriorImg1 from "@/assets/EXTERIOR-VIEW-CAM-01-768x384.jpg";
 import exteriorImg2 from "@/assets/EXTERIOR-VIEW-CAM-02-300x106.jpg";
 
+// --- DYNAMIC BACKEND URL LOGIC ---
+const BACKEND_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const IMAGE_BASE_URL = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
+
 const ResourcesPage = () => {
   const location = useLocation();
   const [articles, setArticles] = useState([]);
@@ -30,11 +34,18 @@ const ResourcesPage = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("articles");
 
-  // --- 1. Helper: Image URL Handler ---
+  // --- 1. Helper: Image URL Handler (FIXED SLASH ISSUE) ---
   const getImageUrl = (path) => {
     if (!path) return "https://placehold.co/600x400?text=JSOT+Media";
-    if (path.startsWith('http')) return path;
-    return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${path}`;
+    
+    // Agar path pehle se hi external (http/https) hai
+    if (path.startsWith("http://") || path.startsWith("https://")) {
+      return path;
+    }
+    
+    // Local path mein slash ensure karo
+    const safePath = path.startsWith('/') ? path : `/${path}`;
+    return `${IMAGE_BASE_URL}${safePath}`;
   };
 
   // --- 2. Helper: Date Formatter ---
@@ -198,7 +209,6 @@ const ResourcesPage = () => {
                       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {articles.map((article) => (
                           <Card key={article.id} className="border-gold/20 overflow-hidden group hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-                            {/* Image Section - Modified to fit 'Leaders' style (clean, bordered) */}
                             <div className="p-4 pb-0">
                               <div className="relative w-full h-48 overflow-hidden rounded-md border border-gold/10">
                                 <img
@@ -251,7 +261,6 @@ const ResourcesPage = () => {
                       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {videos.map((video) => (
                           <Card key={video.id} className="border-gold/20 overflow-hidden group hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-                             {/* Video Thumbnail Section */}
                              <div className="p-4 pb-0">
                                <div 
                                  className="relative w-full h-48 overflow-hidden rounded-md border border-gold/10 cursor-pointer group/img"

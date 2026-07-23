@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://jainwebsitebj.onrender.com/api', // Your Backend URL
     // baseURL: 'http://localhost:5000/api'
+     baseURL: import.meta.env.VITE_API_BASE_URL || 'https://jsot-api.cloudgenz.com/api'
 });
 
 // Add a request interceptor to include token

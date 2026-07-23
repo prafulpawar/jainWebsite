@@ -49,17 +49,22 @@ const getTypeColor = (typeName) => {
   return `border ${dynamicPalette[index]}`;
 };
 
-const IMAGE_BASE_URL = "http://localhost:5000";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+console.log("Using BACKEND_URL:", BACKEND_URL);
+const IMAGE_BASE_URL = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
 
-// --- NEW HELPER FUNCTION TO FIX IMAGES ---
+
 const getImageUrl = (path) => {
   if (!path) return "";
-  // Agar path http ya https se shuru hota hai (Cloudinary), to direct path return karo
+  
+ 
   if (path.startsWith("http://") || path.startsWith("https://")) {
     return path;
   }
-  // Nahi to Localhost URL add karo (Purani images ke liye)
-  return `${IMAGE_BASE_URL}${path}`;
+  
+
+  const safePath = path.startsWith('/') ? path : `/${path}`;
+  return `${IMAGE_BASE_URL}${safePath}`;
 };
 // ----------------------------------------
 

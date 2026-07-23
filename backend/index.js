@@ -1,10 +1,10 @@
 import './config/env.js';   
-
+import path from 'path';
 import express from 'express';
 import cors from 'cors';
 import './config/db.js';
 import adminRoutes from './routes/adminRoutes.js';
-import './utils/cloudinary.js'
+
 
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
@@ -12,11 +12,38 @@ const panchangData = require('./utils/jain_panchang_2025.json');
 
 const app = express();
 
-app.use(cors());
+
+const allowedOrigins = [
+  'http://localhost:3000',      
+  'http://localhost:5173',      
+  'https://jsot.cloudgenz.com', 
+  'https://jsotcanada.org',     
+  'https://www.jsotcanada.org'  
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+   
+    if (!origin) return callback(null, true);
+    
+   
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    } else {
+     
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+  },
+  credentials: true
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 
-// app.use('/uploads', express.static('uploads'));
+const uploadPath = path.join(process.cwd(), '../uploads');
+app.use('/uploads', express.static(uploadPath));
+
 app.use('/api', adminRoutes);
 app.get('/api/panchang-2025', (req, res) => {
     try {
